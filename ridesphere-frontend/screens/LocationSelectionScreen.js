@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, TextInput, Button, StyleSheet, Alert } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import axios from "axios";
@@ -8,23 +8,40 @@ const LocationSelectionScreen = ({ navigation }) => {
     const [dropoff, setDropoff] = useState("");
     const [pickupCoords, setPickupCoords] = useState(null);
     const [dropoffCoords, setDropoffCoords] = useState(null);
+    const [collegeCoords, setCollegeCoords] = useState({
+        latitude: 13.0261044,
+        longitude: 80.0162591,
+    });
     const [routeCoords, setRouteCoords] = useState([]);
 
-    // ✅ Fix: Add User-Agent header to prevent API blocking
+    const mapRef = useRef(null); // MapView reference
+
+    useEffect(() => {
+        // 🔹 Focus on Saveetha Engineering College on initial render
+        if (mapRef.current) {
+            mapRef.current.animateToRegion({
+                latitude: collegeCoords.latitude,
+                longitude: collegeCoords.longitude,
+                latitudeDelta: 0.002,
+                longitudeDelta: 0.002,
+            }, 1000);
+        }
+    }, []);
+
     const searchLocation = async (query, type) => {
+        if (!query) return; // Prevent empty search
+
         try {
-            if (!query) return; // Prevent empty search
             const response = await axios.get(
                 `https://nominatim.openstreetmap.org/search?q=${query}&format=json`,
                 {
                     headers: {
-                        "User-Agent": "MyRideShareApp/1.0 (myapp@email.com)", // Update this
+                        "User-Agent": "MyRideShareApp/1.0 (your@email.com)",
                         "Accept-Language": "en",
                     },
                 }
             );
-            console.log(response.data.length);
-            
+
             if (response.data.length > 0) {
                 const { lat, lon } = response.data[0];
                 const coords = { latitude: parseFloat(lat), longitude: parseFloat(lon) };
@@ -36,6 +53,16 @@ const LocationSelectionScreen = ({ navigation }) => {
                     setDropoff(query);
                     setDropoffCoords(coords);
                 }
+
+                // 🔹 Adjust map to show the selected location
+                if (mapRef.current) {
+                    mapRef.current.animateToRegion({
+                        latitude: coords.latitude,
+                        longitude: coords.longitude,
+                        latitudeDelta: 0.005,
+                        longitudeDelta: 0.005,
+                    }, 1000);
+                }
             } else {
                 Alert.alert("Location not found", "Please enter a valid location.");
             }
@@ -44,7 +71,6 @@ const LocationSelectionScreen = ({ navigation }) => {
             Alert.alert("Error", "Failed to fetch location. Try again.");
         }
     };
-
 
     const fetchRoute = async () => {
         if (!pickupCoords || !dropoffCoords) {
@@ -67,8 +93,17 @@ const LocationSelectionScreen = ({ navigation }) => {
                     longitude: coord[0],
                 }));
 
-                setRouteCoords([...coordinates]); // ✅ Ensures state updates correctly            
+                setRouteCoords([...coordinates]); // ✅ Update route state
+
+                // 🔹 Adjust map to fit route
+                if (mapRef.current) {
+                    mapRef.current.fitToCoordinates([pickupCoords, dropoffCoords], {
+                        edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+                        animated: true,
+                    });
+                }
             } else {
+                setRouteCoords([]);
                 Alert.alert("No Route Found", "Unable to find a route between these locations.");
             }
         } catch (error) {
@@ -95,27 +130,39 @@ const LocationSelectionScreen = ({ navigation }) => {
             />
             <Button title="Show Route" onPress={fetchRoute} disabled={!pickupCoords || !dropoffCoords} />
 
-            <MapView 
-                key={routeCoords.length} // ✅ Forces re-render on route update
-                style={styles.map} 
-                region={{
-                    latitude: pickupCoords ? pickupCoords.latitude : 37.7749,
-                    longitude: pickupCoords ? pickupCoords.longitude : -122.4194,
-                    latitudeDelta: 0.05,
-                    longitudeDelta: 0.05,
+            <MapView
+                ref={mapRef}
+                style={styles.map}
+                initialRegion={{
+                    latitude: collegeCoords.latitude,
+                    longitude: collegeCoords.longitude,
+                    latitudeDelta: 0.002,
+                    longitudeDelta: 0.002,
                 }}
             >
-                {pickupCoords && <Marker coordinate={pickupCoords} title="Pickup" />}
-                {dropoffCoords && <Marker coordinate={dropoffCoords} title="Drop-off" />}
+                {/* ✅ Marker for Saveetha Engineering College */}
+                <Marker
+                    coordinate={collegeCoords}
+                    title="Saveetha Engineering College"
+                    description="NH48, Palanjur, Sriperumbudur, Tamil Nadu"
+                />
+
+                {/* ✅ Marker for Pickup */}
+                {pickupCoords && <Marker coordinate={pickupCoords} title="Pickup" pinColor="blue" />}
+
+                {/* ✅ Marker for Drop-off */}
+                {dropoffCoords && <Marker coordinate={dropoffCoords} title="Drop-off" pinColor="red" />}
+
+                {/* ✅ Show Route if available */}
                 {routeCoords.length > 0 && (
                     <Polyline coordinates={routeCoords} strokeWidth={3} strokeColor="blue" />
                 )}
             </MapView>
 
-            <Button 
-                title="Proceed" 
-                onPress={() => navigation.navigate("RideDetails", { pickupCoords, dropoffCoords })} 
-                disabled={!pickupCoords || !dropoffCoords} 
+            <Button
+                title="Proceed"
+                onPress={() => navigation.navigate("RideDetails", { pickupCoords, dropoffCoords })}
+                disabled={!pickupCoords || !dropoffCoords}
             />
         </View>
     );
