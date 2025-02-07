@@ -8,6 +8,7 @@ import HomeScreen from "../screens/HomeScreen";
 import OfferRideScreen from "../screens/OfferRideScreen";
 import BookRideScreen from "../screens/BookRideScreen";
 import LocationSelectionScreen from "../screens/LocationSelectionScreen";
+import RideDetailsScreen from "../screens/RideDetailsScreen";
 
 const Stack = createStackNavigator();
 
@@ -23,6 +24,7 @@ const AppNavigator = () => {
                         <Stack.Screen name="OfferRide" component={OfferRideScreen} />
                         <Stack.Screen name="BookRide" component={BookRideScreen} />
                         <Stack.Screen name="LocationSelection" component={LocationSelectionScreen} />
+                        <Stack.Screen name="RideDetails" component={RideDetailsScreen} />
                     </>
                 ) : (
                     <>
