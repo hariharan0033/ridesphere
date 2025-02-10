@@ -3,9 +3,11 @@ import { View, Text, Button, TextInput, StyleSheet, Alert, Platform, Pressable }
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import axios from "axios";
+import { useSelector } from "react-redux";
+import { api } from "../services/api";
 
 const RideDetailsScreen = ({ navigation, route }) => {
-    const { pickupCoords, dropoffCoords } = route.params;
+    const { pickupCoords, dropoffCoords, pickupAddress , dropoffAddress } = route.params;
 
     const [date, setDate] = useState(new Date());
     const [showPicker, setShowPicker] = useState(false);
@@ -35,31 +37,47 @@ const RideDetailsScreen = ({ navigation, route }) => {
     };
 
     const calculatePrice = () => {
-        const baseFare = 50;
-        const perKmRate = 10;
-        const totalPrice = baseFare + perKmRate * distance;
-        setPrice(vehicleType === "bike" ? totalPrice : totalPrice / seats);
-    };
+        const perKmRate = 3;
+        const totalPrice = perKmRate * distance;
+        const formattedPrice = totalPrice.toFixed(2); // Rounds to two decimal places
+        setPrice(formattedPrice);
+    };  
 
-    const handleSubmit = () => {
+    const driverId = useSelector((state) => state.auth.user?.id);
+
+    const handleSubmit = async () => {
         if (!vehicleType) {
             Alert.alert("Error", "Please select a vehicle type.");
             return;
         }
 
         const rideDetails = {
-            pickupCoords,
-            dropoffCoords,
-            date,
+            driverId,
+            pickupLocation: { 
+                address: pickupAddress, 
+                coordinates: { lat: pickupCoords.latitude, lng: pickupCoords.longitude } 
+            },
+            dropoffLocation: { 
+                address: dropoffAddress, 
+                coordinates: { lat: dropoffCoords.latitude, lng: dropoffCoords.longitude } 
+            },
+            dateTime: date.toISOString(),
             vehicleType,
-            seats,
+            availableSeats: seats,
+            distance,
             price,
-            distance
         };
 
         console.log("Ride Details:", rideDetails);
-        // Send data to backend here
-        navigation.navigate("Home");
+        
+        try {
+            const response = await api.post("/rides/", rideDetails);          
+            Alert.alert("Success", "Ride posted successfully!");
+            navigation.navigate("Home");
+        } catch (error) {
+            console.error("Error posting ride:", error);
+            Alert.alert("Error", "Failed to post ride. Try again.");
+        }
     };
 
     const onChange = (event, selectedDate) => {
@@ -87,13 +105,8 @@ const RideDetailsScreen = ({ navigation, route }) => {
 
         return (
             <View style={styles.container}>
-                <Pressable onPress={showDatepicker}>
-                    <Text>Select Date</Text>
-                </Pressable>
-                <Pressable onPress={showTimepicker}>
-                    <Text>Select Time</Text>
-                </Pressable>
-
+                <Button title="Select Date" onPress={showDatepicker} />
+                <Button title="Select Time" onPress={showTimepicker} />
                 <Button title="🚲 Bike" onPress={() => { setVehicleType("bike"); setSeats(1); calculatePrice(); }} />
                 <Button title="🚗 Car" onPress={() => { setVehicleType("car"); calculatePrice(); }} />
 

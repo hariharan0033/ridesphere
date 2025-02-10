@@ -8,6 +8,8 @@ const LocationSelectionScreen = ({ navigation }) => {
     const [dropoff, setDropoff] = useState("");
     const [pickupCoords, setPickupCoords] = useState(null);
     const [dropoffCoords, setDropoffCoords] = useState(null);
+    const [pickupAddress, setPickupAddress] = useState("");  // State to store pickup address
+    const [dropoffAddress, setDropoffAddress] = useState("");  // State to store dropoff address
     const [collegeCoords, setCollegeCoords] = useState({
         latitude: 13.0261044,
         longitude: 80.0162591,
@@ -43,15 +45,18 @@ const LocationSelectionScreen = ({ navigation }) => {
             );
 
             if (response.data.length > 0) {
-                const { lat, lon } = response.data[0];
+                const { lat, lon, display_name } = response.data[0];
                 const coords = { latitude: parseFloat(lat), longitude: parseFloat(lon) };
+                const address = display_name; // Get the address from the response
 
                 if (type === "pickup") {
                     setPickup(query);
                     setPickupCoords(coords);
+                    setPickupAddress(address); // Save the address for pickup
                 } else {
                     setDropoff(query);
                     setDropoffCoords(coords);
+                    setDropoffAddress(address); // Save the address for dropoff
                 }
 
                 // 🔹 Adjust map to show the selected location
@@ -161,7 +166,14 @@ const LocationSelectionScreen = ({ navigation }) => {
 
             <Button
                 title="Proceed"
-                onPress={() => navigation.navigate("RideDetails", { pickupCoords, dropoffCoords })}
+                onPress={() => 
+                    navigation.navigate("RideDetails", {
+                        pickupCoords,
+                        dropoffCoords,
+                        pickupAddress,  // Pass pickup address
+                        dropoffAddress, // Pass dropoff address
+                    })
+                }
                 disabled={!pickupCoords || !dropoffCoords}
             />
         </View>
