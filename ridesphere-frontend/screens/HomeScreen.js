@@ -15,7 +15,7 @@ const HomeScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Welcome to Ride Sharing</Text>
-            <Button title="🚗 Offer a Ride" onPress={() => navigation.navigate("OfferRide")} />
+            <Button title="🚗 Offer a Ride" onPress={() => navigation.navigate("LocationSelection")} />
             <Button title="🎟 Book a Ride" onPress={() => navigation.navigate("BookRide")} />
             <Button title="🚪 Logout" onPress={handleLogout} color="red" />
         </View>

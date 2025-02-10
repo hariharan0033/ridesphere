@@ -124,7 +124,7 @@ const RideDetailsScreen = ({ navigation, route }) => {
                 )}
                 
                 <Text>Distance: {distance} km</Text>
-                <Text>Estimated Price: ₹{price}</Text>
+                <Text>Estimated Price: {vehicleType ? `₹${price}` : "Select Vehicle Type"}</Text>
                 
                 <Button title="Submit Ride" onPress={handleSubmit} />
                 <Button title="Cancel" onPress={() => navigation.goBack()} color="red" />
@@ -141,7 +141,7 @@ const RideDetailsScreen = ({ navigation, route }) => {
                     display="spinner"
                     onChange={onChange}
                 />
-                <Text>{date.toLocaleString()}</Text>
+                {/* <Text>{date.toLocaleString()}</Text> */}
 
                 <Button title="🚲 Bike" onPress={() => { setVehicleType("bike"); setSeats(1); calculatePrice(); }} />
                 <Button title="🚗 Car" onPress={() => { setVehicleType("car"); calculatePrice(); }} />
@@ -160,7 +160,7 @@ const RideDetailsScreen = ({ navigation, route }) => {
                 )}
                 
                 <Text>Distance: {distance} km</Text>
-                <Text>Estimated Price: ₹{price}</Text>
+                <Text>Estimated Price: {vehicleType ? `₹${price}` : "Select Vehicle Type"}</Text>
                 
                 <Button title="Submit Ride" onPress={handleSubmit} />
                 <Button title="Cancel" onPress={() => navigation.goBack()} color="red" />
