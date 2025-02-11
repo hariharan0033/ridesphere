@@ -62,4 +62,22 @@ router.post("/", async (req, res) => {
     }
 });
 
+router.get("/", async (req, res) => {
+    try {
+        const { passengerId } = req.query;
+        let filter = {};
+
+        if (passengerId) {
+            filter.passengerId = passengerId;
+        }
+
+        const bookings = await Booking.find(filter).select("rideId");
+        res.json(bookings);
+    } catch (error) {
+        console.error("Error fetching bookings:", error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+
 module.exports = router;

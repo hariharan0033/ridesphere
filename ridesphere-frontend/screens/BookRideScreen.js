@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert } from "react-native";
 import axios from "axios";
 import { api } from "../services/api";
+import { useSelector } from "react-redux";
 
 const BookRideScreen = () => {
     const [pickup, setPickup] = useState("");
@@ -10,10 +11,11 @@ const BookRideScreen = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    // Function to fetch coordinates from OpenStreetMap (Nominatim)
+    const passengerId = useSelector((state) => state.auth.user.id);
+
+    // Function to fetch coordinates from OpenStreetMap
     const getCoordinates = async (query) => {
         if (!query) return null;
-
         try {
             const response = await axios.get(
                 `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
@@ -29,7 +31,6 @@ const BookRideScreen = () => {
                 const { lat, lon, display_name } = response.data[0];
                 return { lat: parseFloat(lat), lng: parseFloat(lon), address: display_name };
             }
-
             return null;
         } catch (error) {
             console.error("Error fetching coordinates:", error);
@@ -59,7 +60,8 @@ const BookRideScreen = () => {
         }
 
         try {
-            const response = await api.get("/rides/search", {
+            // Fetch available rides
+            const rideResponse = await api.get("/rides/search", {
                 params: {
                     pickupLat: pickupData.lat,
                     pickupLng: pickupData.lng,
@@ -68,7 +70,18 @@ const BookRideScreen = () => {
                 },
             });
 
-            setRides(response.data);
+            let availableRides = rideResponse.data;
+            
+            // Fetch passenger's booked rides
+            const bookingResponse = await api.get(`/bookings?passengerId=${passengerId}`);
+            const bookedRideIds = bookingResponse.data.map((booking) => booking.rideId);
+
+            // Filter out already booked rides
+            availableRides = availableRides.filter(
+                (ride) => !bookedRideIds.includes(ride._id) && ride.driverId._id !== passengerId
+            );
+
+            setRides(availableRides);
         } catch (error) {
             console.error("Error searching rides:", error);
             setError("Failed to fetch rides. Try again.");
@@ -82,7 +95,7 @@ const BookRideScreen = () => {
         try {
             await api.post("/bookings", {
                 rideId,
-                passengerId: "your_passenger_id_here", // Replace with actual user ID
+                passengerId,
                 seatsBooked: 1,
             });
 
@@ -168,27 +181,26 @@ const BookRideScreen = () => {
                             </View>
 
                             {/* Pickup Location */}
-                            <View style={{ marginBottom: 10 }}>
-                                <Text style={{ fontSize: 14, color: "#555", marginBottom: 4 }}>📍 Pickup Location</Text>
-                                <Text style={{ fontSize: 16, fontWeight: "bold", color: "#222" }}>
-                                    {item.pickupLocation.address}
-                                </Text>
+                            <View style={{ marginBottom: 6 }}>
+                                <Text style={{ fontSize: 14, fontWeight: "bold", color: "#555" }}>📍 Pickup Location</Text>
+                                <Text style={{ fontSize: 12, color: "#222" }}>{item.pickupLocation.address}</Text>
                             </View>
 
                             {/* Dropoff Location */}
-                            <View style={{ marginBottom: 10 }}>
-                                <Text style={{ fontSize: 14, color: "#555", marginBottom: 4 }}>📍 Drop-off Location</Text>
-                                <Text style={{ fontSize: 16, fontWeight: "bold", color: "#222" }}>
-                                    {item.dropoffLocation.address}
-                                </Text>
+                            <View style={{ marginBottom: 6 }}>
+                                <Text style={{ fontSize: 14, fontWeight: "bold", color: "#555" }}>📍 Drop-off Location</Text>
+                                <Text style={{ fontSize: 12, color: "#222" }}>{item.dropoffLocation.address}</Text>
                             </View>
 
-                            {/* Ride Details Row */}
-                            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 12 }}>
+                            {/* Ride Details */}
+                            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
                                 <Text style={{ fontSize: 14, color: "#333" }}>🚘 {item.vehicleType.toUpperCase()}</Text>
                                 <Text style={{ fontSize: 14, color: "#333" }}>💺 {item.availableSeats} Seats</Text>
-                                <Text style={{ fontSize: 14, color: "#28a745", fontWeight: "bold" }}>💰 ₹{item.price}</Text>
+                                <Text style={{ fontSize: 14, color: "#555", marginBottom: 10 }}>📏 Distance: {item.distance.toFixed(1)} km</Text>
                             </View>
+
+                            {/* Price */}
+                            <Text style={{ fontSize: 18, color: "#28a745", fontWeight: "bold" }}>💰 ₹{item.price}</Text>
 
                             {/* Book Button */}
                             <TouchableOpacity
@@ -206,9 +218,6 @@ const BookRideScreen = () => {
                     );
                 }}
             />
-
-
-
         </View>
     );
 };
