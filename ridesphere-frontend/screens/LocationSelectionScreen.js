@@ -38,7 +38,7 @@ const LocationSelectionScreen = ({ navigation }) => {
                 `https://nominatim.openstreetmap.org/search?q=${query}&format=json`,
                 {
                     headers: {
-                        "User-Agent": "MyRideShareApp/1.0 (your@email.com)",
+                        "User-Agent": "RideSphere/1.0 (contact@ridesphere.com)",
                         "Accept-Language": "en",
                     },
                 }
