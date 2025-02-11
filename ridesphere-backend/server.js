@@ -3,6 +3,10 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 
+const authRoutes = require("./routes/authRoutes");
+const rideRoutes = require("./routes/rides");
+const bookingRoutes = require("./routes/bookings");
+
 dotenv.config();
 
 const app = express();
@@ -16,9 +20,9 @@ mongoose.connect(process.env.MONGO_URI)
  	 	.catch(err => console.log(err));
 
 // Routes
-app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/rides", require("./routes/rides"));
-
+app.use("/api/auth", authRoutes);
+app.use("/api/rides", rideRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 app.get('/', (req, res) => {
 	res.send('Hello, welcome to the root route!');
