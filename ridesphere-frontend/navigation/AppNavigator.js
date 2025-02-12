@@ -8,29 +8,33 @@ import HomeScreen from "../screens/HomeScreen";
 import BookRideScreen from "../screens/BookRideScreen";
 import LocationSelectionScreen from "../screens/LocationSelectionScreen";
 import RideDetailsScreen from "../screens/RideDetailsScreen";
+import BookingConfirmationScreen from "../screens/BookingConfirmationScreen";
 
 const Stack = createStackNavigator();
 
+const AuthStack = () => (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Signup" component={SignupScreen} />
+    </Stack.Navigator>
+);
+
+const AppStack = () => (
+    <Stack.Navigator>
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="BookRide" component={BookRideScreen} />
+        <Stack.Screen name="LocationSelection" component={LocationSelectionScreen} />
+        <Stack.Screen name="RideDetails" component={RideDetailsScreen} />
+        <Stack.Screen name="BookingConfirmation" component={BookingConfirmationScreen} />
+    </Stack.Navigator>
+);
+
 const AppNavigator = () => {
-    const { token } = useSelector((state) => state.auth); // Check if user is logged in
+    const { token } = useSelector((state) => state.auth);
 
     return (
         <NavigationContainer>
-            <Stack.Navigator>
-                {token ? (
-                    <>
-                        <Stack.Screen name="Home" component={HomeScreen} />
-                        <Stack.Screen name="BookRide" component={BookRideScreen} />
-                        <Stack.Screen name="LocationSelection" component={LocationSelectionScreen} />
-                        <Stack.Screen name="RideDetails" component={RideDetailsScreen} />
-                    </>
-                ) : (
-                    <>
-                        <Stack.Screen name="Login" component={LoginScreen} />
-                        <Stack.Screen name="Signup" component={SignupScreen} />
-                    </>
-                )}
-            </Stack.Navigator>
+            {token ? <AppStack /> : <AuthStack />}
         </NavigationContainer>
     );
 };

@@ -18,7 +18,10 @@ router.post("/", async (req, res) => {
         }
 
         // 1️⃣ Check if ride exists
-        const ride = await Ride.findById(rideId).session(session);
+        const ride = await Ride.findById(rideId)
+            .populate("driverId", "name phone") // Populate driver details
+            .session(session);
+            
         if (!ride) {
             await session.abortTransaction();
             return res.status(404).json({ error: "Ride not found" });
@@ -53,7 +56,24 @@ router.post("/", async (req, res) => {
         await session.commitTransaction(); // Commit the transaction
         session.endSession();
 
-        res.status(201).json({ message: "Ride booked successfully", booking });
+         // 6️⃣ Send booking confirmation response
+        res.status(201).json({
+            message: "Ride booked successfully",
+            booking,
+            rideDetails: {
+                pickup: ride.pickupLocation,
+                dropoff: ride.dropoffLocation,
+                dateTime: ride.dateTime,
+                vehicleType: ride.vehicleType,
+                distance: ride.distance,
+                price: ride.price,
+                driver: {
+                    name: ride.driverId.name,
+                    contact: ride.driverId.contact,
+                },
+            },
+        });
+
     } catch (error) {
         await session.abortTransaction();
         session.endSession();

@@ -68,7 +68,6 @@ const RideDetailsScreen = ({ navigation, route }) => {
             price,
         };
 
-        console.log("Ride Details:", rideDetails);
         
         try {
             const response = await api.post("/rides/", rideDetails);          

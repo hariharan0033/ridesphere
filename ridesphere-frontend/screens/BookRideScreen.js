@@ -4,7 +4,7 @@ import axios from "axios";
 import { api } from "../services/api";
 import { useSelector } from "react-redux";
 
-const BookRideScreen = () => {
+const BookRideScreen = ({ navigation }) => {
     const [pickup, setPickup] = useState("");
     const [dropoff, setDropoff] = useState("");
     const [rides, setRides] = useState([]);
@@ -92,19 +92,40 @@ const BookRideScreen = () => {
 
     // Function to handle ride booking
     const bookRide = async (rideId) => {
-        try {
-            await api.post("/bookings", {
-                rideId,
-                passengerId,
-                seatsBooked: 1,
-            });
-
-            Alert.alert("Success", "Ride booked successfully!");
-        } catch (error) {
-            console.error("Error booking ride:", error);
-            Alert.alert("Error", "Failed to book ride. Try again.");
-        }
+        Alert.alert(
+            "Confirm Booking",
+            "Are you sure you want to book this ride?",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Confirm",
+                    onPress: async () => {
+                        try {
+                            const response = await api.post("/bookings", {
+                                rideId,
+                                passengerId,
+                                seatsBooked: 1,
+                            });
+    
+                            console.log(response.data);
+                            
+                            Alert.alert("Success", "Ride booked successfully!");
+                            navigation.navigate("BookingConfirmation", {
+                                booking: response.data.booking,
+                                rideDetails: response.data.rideDetails, // Pass ride details
+                            });
+    
+                        } catch (error) {
+                            console.error("Error booking ride:", error);
+                            Alert.alert("Error", "Failed to book ride. Try again.");
+                        }
+                    },
+                },
+            ]
+        );
     };
+    
+    
 
     return (
         <View style={{ flex: 1, padding: 20 }}>
@@ -134,6 +155,11 @@ const BookRideScreen = () => {
 
             {error ? <Text style={{ color: "red", marginTop: 10 }}>{error}</Text> : null}
 
+            {rides.length === 0 && !loading ? (
+                    <Text style={{ textAlign: "center", marginTop: 20, fontSize: 16, color: "#888" }}>
+                        😕 No rides found. Try a different search.
+                    </Text>
+                ) : (
             <FlatList
                 data={rides}
                 keyExtractor={(item) => item._id}
@@ -218,6 +244,7 @@ const BookRideScreen = () => {
                     );
                 }}
             />
+                )}
         </View>
     );
 };
