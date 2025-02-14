@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert ,StyleSheet, Platform} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import axios from "axios";
 import { api } from "../services/api";
 import { useSelector } from "react-redux";
@@ -106,9 +108,7 @@ const BookRideScreen = ({ navigation }) => {
                                 passengerId,
                                 seatsBooked: 1,
                             });
-    
-                            console.log(response.data);
-                            
+
                             Alert.alert("Success", "Ride booked successfully!");
                             navigation.navigate("BookingConfirmation", {
                                 booking: response.data.booking,
@@ -128,6 +128,7 @@ const BookRideScreen = ({ navigation }) => {
     
 
     return (
+        <SafeAreaView style={styles.safeContainer}>
         <View style={{ flex: 1, padding: 20 }}>
             <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 10 }}>Book a Ride</Text>
 
@@ -246,7 +247,16 @@ const BookRideScreen = ({ navigation }) => {
             />
                 )}
         </View>
+        </SafeAreaView>
     );
 };
+
+const styles = StyleSheet.create({
+    safeContainer: {
+        flex: 1,
+        backgroundColor: "#fff", 
+        paddingTop: Platform.OS === "android" ? 30 : 0, // Extra padding for Android status bar
+    },
+});
 
 export default BookRideScreen;
