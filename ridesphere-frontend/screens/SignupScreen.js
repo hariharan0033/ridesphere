@@ -6,16 +6,18 @@ import {
     TouchableOpacity,
     Alert,
     StyleSheet,
-    SafeAreaView,
     StatusBar,
     Platform,
 } from "react-native";
 import { api } from "../services/api";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { FontAwesome } from "@expo/vector-icons";
 
 const SignupScreen = ({ navigation }) => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [secureText, setSecureText] = useState(true);
 
     const handleSignup = async () => {
         if (!name || !email || !password) {
@@ -34,43 +36,57 @@ const SignupScreen = ({ navigation }) => {
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
-                {/* Title */}
+                {/* <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Text style={styles.backText}>← Back</Text>
+                </TouchableOpacity> */}
+
                 <Text style={styles.title}>Create an Account</Text>
 
-                {/* Input Fields */}
                 <TextInput
                     style={styles.input}
                     placeholder="Full Name"
-                    placeholderTextColor="#888"
+                    placeholderTextColor="#d0d0d0"
                     value={name}
                     onChangeText={setName}
+                    autoCapitalize="words"
                 />
+
                 <TextInput
                     style={styles.input}
                     placeholder="Email"
-                    placeholderTextColor="#888"
+                    placeholderTextColor="#d0d0d0"
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Password"
-                    placeholderTextColor="#888"
-                    secureTextEntry
-                    value={password}
-                    onChangeText={setPassword}
+                    autoCapitalize="none"
                 />
 
-                {/* Signup Button */}
-                <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
-                    <Text style={styles.signupButtonText}>Sign Up</Text>
-                </TouchableOpacity>
+                <View style={styles.passwordContainer}>
+                    <TextInput
+                        style={styles.passwordInput}
+                        placeholder="Enter Your Password"
+                        placeholderTextColor="#d0d0d0"
+                        secureTextEntry={secureText}
+                        value={password}
+                        onChangeText={setPassword}
+                    />
+                    <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+                        <FontAwesome name={secureText ? "eye-slash" : "eye"} size={20} color="#414141" />
+                    </TouchableOpacity>
+                </View>
 
-                {/* Navigation to Login */}
-                <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-                    <Text style={styles.loginText}>Already have an account? <Text style={styles.loginLink}>Login</Text></Text>
-                </TouchableOpacity>
+                <View style={styles.bottomContainer}>
+                    <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
+                        <Text style={styles.signupButtonText}>Sign Up</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.loginContainer}>
+                        <Text style={styles.alreadyHaveAccount}>Already have an account?</Text>
+                        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                            <Text style={styles.loginText}> Login</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
         </SafeAreaView>
     );
@@ -79,52 +95,79 @@ const SignupScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: "#f9f9f9",
+        backgroundColor: "#fff",
         paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
     },
     container: {
         flex: 1,
         paddingHorizontal: 20,
-        justifyContent: "center",
-        alignItems: "center",
+    },
+    backText: {
+        fontSize: 16,
+        color: "#008955",
+        marginVertical: 10,
     },
     title: {
         fontSize: 24,
         fontWeight: "bold",
-        marginBottom: 20,
-        color: "#333",
+        color: "#414141",
+        marginVertical: 20,
     },
     input: {
-        width: "100%",
+        borderWidth: 1,
+        borderColor: "#b8b8b8",
+        borderRadius: 8,
+        paddingHorizontal: 12,
         height: 50,
-        backgroundColor: "#fff",
-        borderRadius: 10,
-        paddingHorizontal: 15,
         fontSize: 16,
         marginBottom: 15,
+        backgroundColor: "#fff",
+    },
+    passwordContainer: {
+        flexDirection: "row",
         borderWidth: 1,
-        borderColor: "#ddd",
+        borderColor: "#b8b8b8",
+        borderRadius: 8,
+        alignItems: "center",
+        paddingHorizontal: 12,
+        height: 50,
+        marginBottom: 10,
+        backgroundColor: "#fff",
+    },
+    passwordInput: {
+        flex: 1,
+        fontSize: 16,
+        height: "100%",
+    },
+    bottomContainer: {
+        flex: 1,
+        justifyContent: "flex-end",
+        marginBottom: 30,
     },
     signupButton: {
-        width: "100%",
-        backgroundColor: "#007AFF",
-        paddingVertical: 14,
-        borderRadius: 10,
+        backgroundColor: "#008955",
+        padding: 15,
+        borderRadius: 8,
         alignItems: "center",
-        marginTop: 10,
+        height: 54,
     },
     signupButtonText: {
         color: "#fff",
         fontSize: 16,
         fontWeight: "bold",
     },
-    loginText: {
-        marginTop: 15,
-        fontSize: 14,
-        color: "#666",
+    loginContainer: {
+        flexDirection: "row",
+        justifyContent: "center",
+        marginTop: 20,
     },
-    loginLink: {
-        color: "#007AFF",
+    alreadyHaveAccount: {
+        color: "#5a5a5a",
+        fontSize: 14,
+    },
+    loginText: {
+        color: "#008955",
+        fontSize: 14,
         fontWeight: "bold",
     },
 });
