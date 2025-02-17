@@ -7,6 +7,7 @@ import {
     Alert,
     Platform,
     KeyboardAvoidingView,
+    ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MapView, { Marker, Polyline } from "react-native-maps";
@@ -17,15 +18,15 @@ const LocationSelectionScreen = ({ navigation }) => {
     const [dropoff, setDropoff] = useState("");
     const [pickupCoords, setPickupCoords] = useState(null);
     const [dropoffCoords, setDropoffCoords] = useState(null);
-    const [pickupAddress, setPickupAddress] = useState("");  
-    const [dropoffAddress, setDropoffAddress] = useState("");  
+    const [pickupAddress, setPickupAddress] = useState("");
+    const [dropoffAddress, setDropoffAddress] = useState("");
     const [collegeCoords, setCollegeCoords] = useState({
         latitude: 13.0261044,
         longitude: 80.0162591,
     });
     const [routeCoords, setRouteCoords] = useState([]);
 
-    const mapRef = useRef(null); // MapView reference
+    const mapRef = useRef(null);
 
     useEffect(() => {
         if (mapRef.current) {
@@ -55,7 +56,7 @@ const LocationSelectionScreen = ({ navigation }) => {
             if (response.data.length > 0) {
                 const { lat, lon, display_name } = response.data[0];
                 const coords = { latitude: parseFloat(lat), longitude: parseFloat(lon) };
-                const address = display_name; 
+                const address = display_name;
 
                 if (type === "pickup") {
                     setPickup(query);
@@ -103,7 +104,7 @@ const LocationSelectionScreen = ({ navigation }) => {
                     longitude: coord[0],
                 }));
 
-                setRouteCoords([...coordinates]); 
+                setRouteCoords([...coordinates]);
 
                 if (mapRef.current) {
                     mapRef.current.fitToCoordinates([pickupCoords, dropoffCoords], {
@@ -123,61 +124,66 @@ const LocationSelectionScreen = ({ navigation }) => {
 
     return (
         <SafeAreaView style={styles.safeContainer}>
-            <KeyboardAvoidingView 
-                style={styles.container} 
+            <KeyboardAvoidingView
+                style={styles.container}
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
             >
-                <TextInput
-                    style={styles.input}
-                    placeholder="Enter Pickup Location"
-                    value={pickup}
-                    onChangeText={setPickup}
-                    onSubmitEditing={() => searchLocation(pickup, "pickup")}
-                />
-                <TextInput
-                    style={styles.input}
-                    placeholder="Enter Drop-off Location"
-                    value={dropoff}
-                    onChangeText={setDropoff}
-                    onSubmitEditing={() => searchLocation(dropoff, "dropoff")}
-                />
-                <Button title="Show Route" onPress={fetchRoute} disabled={!pickupCoords || !dropoffCoords} />
-
-                <MapView
-                    ref={mapRef}
-                    style={styles.map}
-                    initialRegion={{
-                        latitude: collegeCoords.latitude,
-                        longitude: collegeCoords.longitude,
-                        latitudeDelta: 0.002,
-                        longitudeDelta: 0.002,
-                    }}
-                >
-                    <Marker
-                        coordinate={collegeCoords}
-                        title="Saveetha Engineering College"
-                        description="NH48, Palanjur, Sriperumbudur, Tamil Nadu"
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Enter Pickup Location"
+                        value={pickup}
+                        onChangeText={setPickup}
+                        onSubmitEditing={() => searchLocation(pickup, "pickup")}
                     />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Enter Drop-off Location"
+                        value={dropoff}
+                        onChangeText={setDropoff}
+                        onSubmitEditing={() => searchLocation(dropoff, "dropoff")}
+                    />
+                    <Button title="Show Route" onPress={fetchRoute} disabled={!pickupCoords || !dropoffCoords} />
 
-                    {pickupCoords && <Marker coordinate={pickupCoords} title="Pickup" pinColor="blue" />}
-                    {dropoffCoords && <Marker coordinate={dropoffCoords} title="Drop-off" pinColor="red" />}
-                    {routeCoords.length > 0 && (
-                        <Polyline coordinates={routeCoords} strokeWidth={3} strokeColor="blue" />
-                    )}
-                </MapView>
+                    <MapView
+                        ref={mapRef}
+                        style={styles.map}
+                        initialRegion={{
+                            latitude: collegeCoords.latitude,
+                            longitude: collegeCoords.longitude,
+                            latitudeDelta: 0.002,
+                            longitudeDelta: 0.002,
+                        }}
+                    >
+                        <Marker
+                            coordinate={collegeCoords}
+                            title="Saveetha Engineering College"
+                            description="NH48, Palanjur, Sriperumbudur, Tamil Nadu"
+                        />
 
-                <Button
-                    title="Proceed"
-                    onPress={() => 
-                        navigation.navigate("RideDetails", {
-                            pickupCoords,
-                            dropoffCoords,
-                            pickupAddress,
-                            dropoffAddress,
-                        })
-                    }
-                    disabled={!pickupCoords || !dropoffCoords}
-                />
+                        {pickupCoords && <Marker coordinate={pickupCoords} title="Pickup" pinColor="blue" />}
+                        {dropoffCoords && <Marker coordinate={dropoffCoords} title="Drop-off" pinColor="red" />}
+                        {routeCoords.length > 0 && (
+                            <Polyline coordinates={routeCoords} strokeWidth={3} strokeColor="blue" />
+                        )}
+                    </MapView>
+                </ScrollView>
+
+                {/* Fixed Footer Button to Avoid Bottom Tab Overlap */}
+                <View style={styles.footer}>
+                    <Button
+                        title="Proceed"
+                        onPress={() =>
+                            navigation.navigate("RideDetails", {
+                                pickupCoords,
+                                dropoffCoords,
+                                pickupAddress,
+                                dropoffAddress,
+                            })
+                        }
+                        disabled={!pickupCoords || !dropoffCoords}
+                    />
+                </View>
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
@@ -186,12 +192,14 @@ const LocationSelectionScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     safeContainer: {
         flex: 1,
-        backgroundColor: "#fff", 
-        paddingTop: Platform.OS === "android" ? 30 : 0, // Extra padding for Android status bar
+        backgroundColor: "#fff",
     },
     container: {
         flex: 1,
         padding: 10,
+    },
+    scrollContainer: {
+        flexGrow: 1,
     },
     input: {
         height: 40,
@@ -199,10 +207,18 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         marginBottom: 10,
         paddingHorizontal: 8,
+        borderRadius: 5,
     },
     map: {
         flex: 1,
+        height: 300,
         marginVertical: 10,
+    },
+    footer: {
+        paddingBottom: 80,
+        backgroundColor: "#fff",
+        borderTopWidth: 1,
+        borderColor: "#ddd",
     },
 });
 

@@ -62,7 +62,7 @@ router.get("/search", async (req, res) => {
 
     // Step 2: If no exact match, find nearby rides using MongoDB geospatial query
     if (rides.length === 0) {
-      const radius = 0.02; // 2km in radians (Earth’s radius = 6371km)
+      const radius = 5 / 6371;  // 2km in radians (Earth’s radius = 6371km)
 
       rides = await Ride.find({
         "pickupLocation.coordinates": {

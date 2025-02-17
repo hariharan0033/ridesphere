@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
 
     name: { fontSize: 34, fontWeight: "bold", marginBottom: 15, color: "#333" },
 
-    input: { width: "100%", height: 60, borderWidth: 1, borderColor: "#ccc", borderRadius: 10, paddingHorizontal: 15, marginBottom: 15,  },
+    input: { fontSize: 16, width: "100%", height: 60, borderWidth: 1, borderColor: "#ccc", borderRadius: 10, paddingHorizontal: 15, marginBottom: 15,  },
 
     row: { flexDirection: "row", alignItems: "center", width: "100%" },
     phoneInput: { flex: 1 },
