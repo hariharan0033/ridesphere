@@ -1,176 +1,294 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, Button, TextInput, StyleSheet, Alert, Platform, Pressable } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  Platform,
+} from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
-import axios from "axios";
-import { useSelector } from "react-redux";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import { api } from "../services/api";
+import { useEffect } from "react";
 
-const RideDetailsScreen = ({ navigation, route }) => {
-    const { pickupCoords, dropoffCoords, pickupAddress , dropoffAddress } = route.params;
+const RideDetailsScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { pickupLocation, dropoffLocation, vehicleType, distance } = route.params || {};
 
-    const [date, setDate] = useState(new Date());
-    const [showPicker, setShowPicker] = useState(false);
-    const [vehicleType, setVehicleType] = useState(null);
-    const [seats, setSeats] = useState(1);
-    const [price, setPrice] = useState(0);
-    const [distance, setDistance] = useState(0);
-
-    useEffect(() => {
-        if (pickupCoords && dropoffCoords) {
-            fetchDistance();
-        }
-    }, [pickupCoords, dropoffCoords]);
-
-    const fetchDistance = async () => {
-        try {
-            const response = await axios.get(
-                `https://router.project-osrm.org/route/v1/driving/${pickupCoords.longitude},${pickupCoords.latitude};${dropoffCoords.longitude},${dropoffCoords.latitude}?overview=false&steps=false`
-            );
-            const distanceInMeters = response.data.routes[0].distance;
-            const distanceInKm = (distanceInMeters / 1000).toFixed(2);
-            setDistance(distanceInKm);
-        } catch (error) {
-            console.error("Error fetching distance:", error);
-            Alert.alert("Error", "Failed to fetch distance. Try again.");
-        }
-    };
-
-    const calculatePrice = () => {
-        const perKmRate = 3;
-        const totalPrice = perKmRate * distance;
-        const formattedPrice = totalPrice.toFixed(2); // Rounds to two decimal places
-        setPrice(formattedPrice);
-    };  
-
-    const driverId = useSelector((state) => state.auth.user?.id);
-
-    const handleSubmit = async () => {
-        if (!vehicleType) {
-            Alert.alert("Error", "Please select a vehicle type.");
-            return;
-        }
-
-        const rideDetails = {
-            driverId,
-            pickupLocation: { 
-                address: pickupAddress, 
-                coordinates: { lat: pickupCoords.latitude, lng: pickupCoords.longitude } 
-            },
-            dropoffLocation: { 
-                address: dropoffAddress, 
-                coordinates: { lat: dropoffCoords.latitude, lng: dropoffCoords.longitude } 
-            },
-            dateTime: date.toISOString(),
-            vehicleType,
-            availableSeats: seats,
-            distance,
-            price,
-        };
-
-        
-        try {
-            const response = await api.post("/rides/", rideDetails);          
-            Alert.alert("Success", "Ride posted successfully!");
-            navigation.navigate("Home");
-        } catch (error) {
-            console.error("Error posting ride:", error);
-            Alert.alert("Error", "Failed to post ride. Try again.");
-        }
-    };
-
-    const onChange = (event, selectedDate) => {
-        const currentDate = selectedDate || date; // Ensure the date doesn't get set to `undefined`
-        setDate(currentDate);
-    };
-
-    if (Platform.OS === "android") {
-        const showMode = (currentMode) => {
-            DateTimePickerAndroid.open({
-                value: date,
-                onChange,
-                mode: currentMode,
-                is24Hour: false,
-            });
-        };
-
-        const showDatepicker = () => {
-            showMode("date");
-        };
-
-        const showTimepicker = () => {
-            showMode("time");
-        };
-
-        return (
-            <View style={styles.container}>
-                <Button title="Select Date" onPress={showDatepicker} />
-                <Button title="Select Time" onPress={showTimepicker} />
-                <Button title="🚲 Bike" onPress={() => { setVehicleType("bike"); setSeats(1); calculatePrice(); }} />
-                <Button title="🚗 Car" onPress={() => { setVehicleType("car"); calculatePrice(); }} />
-
-                {vehicleType === "car" && (
-                    <TextInput
-                        style={styles.input}
-                        keyboardType="numeric"
-                        placeholder="Enter Number of Seats"
-                        onChangeText={(value) => {
-                            const numSeats = parseInt(value) || 1;
-                            setSeats(numSeats);
-                            calculatePrice();
-                        }}
-                    />
-                )}
-                
-                <Text>Distance: {distance} km</Text>
-                <Text>Estimated Price: {vehicleType ? `₹${price}` : "Select Vehicle Type"}</Text>
-                
-                <Button title="Submit Ride" onPress={handleSubmit} />
-                <Button title="Cancel" onPress={() => navigation.goBack()} color="red" />
-            </View>
-        );
-    } else {
-        // For iOS, DateTimePicker is handled differently
-        return (
-            <View style={styles.container}>
-                <DateTimePicker
-                    style={{ width: 200 }}
-                    value={date}
-                    mode="date"
-                    display="spinner"
-                    onChange={onChange}
-                />
-                {/* <Text>{date.toLocaleString()}</Text> */}
-
-                <Button title="🚲 Bike" onPress={() => { setVehicleType("bike"); setSeats(1); calculatePrice(); }} />
-                <Button title="🚗 Car" onPress={() => { setVehicleType("car"); calculatePrice(); }} />
-
-                {vehicleType === "car" && (
-                    <TextInput
-                        style={styles.input}
-                        keyboardType="numeric"
-                        placeholder="Enter Number of Seats"
-                        onChangeText={(value) => {
-                            const numSeats = parseInt(value) || 1;
-                            setSeats(numSeats);
-                            calculatePrice();
-                        }}
-                    />
-                )}
-                
-                <Text>Distance: {distance} km</Text>
-                <Text>Estimated Price: {vehicleType ? `₹${price}` : "Select Vehicle Type"}</Text>
-                
-                <Button title="Submit Ride" onPress={handleSubmit} />
-                <Button title="Cancel" onPress={() => navigation.goBack()} color="red" />
-            </View>
-        );
+  useEffect(() => {
+    if (!pickupLocation || !dropoffLocation || !vehicleType || distance === undefined) {
+      Alert.alert("Error", "Missing ride details. Please go back and re-enter.", [
+        { text: "OK", onPress: () => navigation.goBack() },
+      ]);
     }
+  }, []);
+
+  const [date, setDate] = useState(null);
+  const [time, setTime] = useState(null);
+  const [availableSeats, setAvailableSeats] = useState("");
+  const [isCustomPrice, setIsCustomPrice] = useState(false);
+  const [price, setPrice] = useState((distance * 3).toFixed(2));
+  const [loading, setLoading] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickerMode, setPickerMode] = useState("date");
+
+  const showMode = (currentMode) => {
+    if (Platform.OS === "android") {
+      DateTimePickerAndroid.open({
+        value: new Date(), 
+        mode: currentMode,
+        is24Hour: false,
+        onChange: (_, selectedDate) => {
+          if (selectedDate) {
+            currentMode === "date" ? setDate(selectedDate) : setTime(selectedDate);
+          }
+        },
+      });
+    } else {
+      setPickerMode(currentMode);
+      setShowPicker(true);
+    }
+  };
+  const handleCustomPrice = () => {
+    setIsCustomPrice(true);
+    setPrice(""); // Allow user to enter a new price
+  };
+
+  const handleAutoPrice = () => {
+    setIsCustomPrice(false);
+    setPrice((distance * 3).toFixed(2)); // Reset to calculated price
+  };
+
+  const handlePostRide = async () => {
+    if (!date  || !time || !price || (vehicleType === "car" && !availableSeats)) {
+      Alert.alert("Error", "Please fill all the required fields.");
+      return;
+    }
+    if (vehicleType === "car" && (availableSeats === "" || Number(availableSeats) <= 0)) {
+      Alert.alert("Error", "Please enter a valid number of available seats.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const rideDateTime = new Date(date);
+      rideDateTime.setHours(time.getHours(), time.getMinutes());
+  
+      const rideData = {
+        pickupLocation: {
+          address: pickupLocation.address,
+          coordinates: [pickupLocation.coordinates.longitude, pickupLocation.coordinates.latitude], // ✅ Fix: Convert to [lng, lat]
+        },
+        dropoffLocation: {
+          address: dropoffLocation.address,
+          coordinates: [dropoffLocation.coordinates.longitude, dropoffLocation.coordinates.latitude], // ✅ Fix: Convert to [lng, lat]
+        },
+        dateTime: rideDateTime.toISOString(), // Send date as ISO string
+        vehicleType,
+        availableSeats: vehicleType === "car" ? Number(availableSeats) : 1,
+        distance,
+        price: Number(price),
+      };
+      
+  
+      await api.post("/rides/post", rideData);
+  
+      Alert.alert("Success", "Ride posted successfully!");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "RideOfferConfirmation" }],
+    });
+    
+    } catch (error) {
+      console.error("Ride posting error:", error.response?.data || error.message);
+      Alert.alert("Error", "Failed to post ride. Try again later.");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.title}>Post a Ride</Text>
+
+      <View style={styles.inputBox}>
+        <Text style={styles.label}>Pickup</Text>
+        <Text style={styles.infoText}>{pickupLocation.address}</Text>
+      </View>
+
+      <View style={styles.inputBox}>
+        <Text style={styles.label}>Drop-off</Text>
+        <Text style={styles.infoText}>{dropoffLocation.address}</Text>
+      </View>
+
+      <View style={styles.rowContainer}>
+        <TouchableOpacity style={styles.inputBoxSmall} onPress={() => showMode("date")}>
+          <Text style={styles.label}>Date</Text>
+          <Text style={styles.infoText}>
+            {date ? date.toLocaleDateString("en-GB") : "Select Date"}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.inputBoxSmall} onPress={() => showMode("time")}>
+          <Text style={styles.label}>Time</Text>
+          <Text style={styles.infoText}>
+            {time ? time.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }) : "Select Time"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+
+      {/* iOS DateTimePicker (Visible only when triggered) */}
+      {Platform.OS === "ios" && showPicker && (
+        <DateTimePicker
+          value={pickerMode === "date" ? date : time}
+          mode={pickerMode}
+          display="spinner"
+          onChange={(_, selectedDate) => {
+            setShowPicker(false);
+            if (selectedDate) {
+              pickerMode === "date" ? setDate(selectedDate) : setTime(selectedDate);
+            }
+          }}
+        />
+      )}
+
+      {vehicleType === "car" && (
+        <View style={styles.inputBox}>
+          <Text style={styles.label}>Available Seats</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter number of seats"
+            keyboardType="numeric"
+            value={availableSeats}
+            onChangeText={(text) => {
+              if (Number(text) > 6) {
+                Alert.alert("Error", "Max 6 seats allowed.");
+              } else {
+                setAvailableSeats(text.replace(/[^0-9]/g, ""));
+              }
+            }}
+          />
+        </View>
+      )}
+
+      <View style={[styles.inputBox, styles.priceContainer]}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.label}>Price (₹)</Text>
+          <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            value={price}
+            onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ""))}
+            editable={isCustomPrice}
+            placeholder={isCustomPrice ? "Enter custom price" : ""}
+          />
+        </View>
+        <TouchableOpacity style={styles.customPriceButton} onPress={isCustomPrice ? handleAutoPrice : handleCustomPrice}>
+          <Text style={styles.customPriceButtonText} >
+          {isCustomPrice ? "Set Default Price" : "Enter Custom Price"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.inputBox}>
+        <Text style={styles.label}>Distance</Text>
+        <Text style={styles.infoText}>{distance} km</Text>
+      </View>
+
+      <TouchableOpacity style={styles.postButton} onPress={handlePostRide} disabled={loading}>
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.postButtonText}>Post Ride</Text>}
+      </TouchableOpacity>
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 20, justifyContent: "center" },
-    input: { borderWidth: 1, borderColor: "gray", padding: 10, marginVertical: 10 },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#008955",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  rowContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    borderRadius: 12,
+    margin: 6,
+    gap:10
+  },
+  inputBox: {
+    backgroundColor: "#E0F2E9",
+    padding: 15,
+    borderRadius: 12,
+    margin: 6,
+  },
+  inputBoxSmall: {
+    backgroundColor: "#E0F2E9",
+    padding: 12,
+    borderRadius: 12,
+    flex: 1,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#008955",
+  },
+  infoText: {
+    fontSize: 16,
+    color: "#333",
+    marginTop: 5,
+  },
+  input: {
+    fontSize: 16,
+    color: "#333",
+    marginTop: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: "#008955",
+    paddingBottom: 5,
+  },
+  priceContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  customPriceButton: {
+    backgroundColor: "#008955",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginLeft: 10,
+  },
+  customPriceButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+
+  },
+  postButton: {
+    backgroundColor: "#008955",
+    padding: 15,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  postButtonText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+  },
 });
 
 export default RideDetailsScreen;

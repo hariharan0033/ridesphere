@@ -16,16 +16,35 @@ import { FontAwesome } from "@expo/vector-icons";
 const SignupScreen = ({ navigation }) => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
+    const [mobileNumber, setMobileNumber] = useState("");  // Added mobile number
+    const [upiId, setUpiId] = useState("");  // Added UPI ID
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState(""); // Added confirm password
     const [secureText, setSecureText] = useState(true);
 
+
+    const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
+    const validateMobileNumber = (mobile) => /^[6-9]\d{9}$/.test(mobile);
+
     const handleSignup = async () => {
-        if (!name || !email || !password) {
+        if (!name || !email || !mobileNumber  || !password || !confirmPassword) {
             return Alert.alert("Error", "All fields are required");
         }
 
+        if (!validateEmail(email)) {
+            return Alert.alert("Error", "Enter a valid email address");
+        }
+
+        if (!validateMobileNumber(mobileNumber)) {
+            return Alert.alert("Error", "Enter a valid 10-digit mobile number");
+        }
+
+        if (password !== confirmPassword) {
+            return Alert.alert("Error", "Passwords do not match!");
+        }
+        
         try {
-            await api.post("/auth/register", { name, email, password });
+            await api.post("/users/register", { name, email, mobileNumber, upiId, password });
             Alert.alert("Success", "Registration Successful!");
             navigation.navigate("Login");
         } catch (error) {
@@ -36,10 +55,6 @@ const SignupScreen = ({ navigation }) => {
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
-                {/* <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Text style={styles.backText}>← Back</Text>
-                </TouchableOpacity> */}
-
                 <Text style={styles.title}>Create an Account</Text>
 
                 <TextInput
@@ -61,6 +76,24 @@ const SignupScreen = ({ navigation }) => {
                     autoCapitalize="none"
                 />
 
+                <TextInput
+                    style={styles.input}
+                    placeholder="Mobile Number"
+                    placeholderTextColor="#d0d0d0"
+                    value={mobileNumber}
+                    onChangeText={setMobileNumber}
+                    keyboardType="phone-pad"
+                />
+
+                {/* <TextInput
+                    style={styles.input}
+                    placeholder="UPI ID"
+                    placeholderTextColor="#d0d0d0"
+                    value={upiId}
+                    onChangeText={setUpiId}
+                    autoCapitalize="none"
+                /> */}
+
                 <View style={styles.passwordContainer}>
                     <TextInput
                         style={styles.passwordInput}
@@ -69,6 +102,20 @@ const SignupScreen = ({ navigation }) => {
                         secureTextEntry={secureText}
                         value={password}
                         onChangeText={setPassword}
+                    />
+                    <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+                        <FontAwesome name={secureText ? "eye-slash" : "eye"} size={20} color="#414141" />
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.passwordContainer}>
+                    <TextInput
+                        style={styles.passwordInput}
+                        placeholder="Confirm Password"
+                        placeholderTextColor="#d0d0d0"
+                        secureTextEntry={secureText}
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
                     />
                     <TouchableOpacity onPress={() => setSecureText(!secureText)}>
                         <FontAwesome name={secureText ? "eye-slash" : "eye"} size={20} color="#414141" />
@@ -101,11 +148,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: 20,
-    },
-    backText: {
-        fontSize: 16,
-        color: "#008955",
-        marginVertical: 10,
     },
     title: {
         fontSize: 24,

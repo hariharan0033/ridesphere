@@ -27,10 +27,11 @@ const ProfileScreen = () => {
                 {/* Input Fields */}
                 <TextInput style={styles.input} value={user?.email || "nate@email.com"} editable={false} />
                 <View style={styles.row}>
-                    <TextInput style={[styles.input, styles.phoneInput]} value={user?.phone || "9999888800"} editable={false} />
+                    <TextInput style={[styles.input, styles.phoneInput]} value={user?.mobileNumber || "9999888800"} editable={false} />
                 </View>
                 <TextInput style={styles.input} value={user?.gender || "Male"} editable={false} />
-                <TextInput style={styles.input} value={user?.address || "Address"} editable={false} />
+                <TextInput style={styles.input} value={user?.homeAddress || "Home Address"} editable={false} />
+                <TextInput style={styles.input} value={user?.upiId || "UPI ID"} editable={false} />
 
                 {/* Logout Button */}
                 <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
@@ -50,7 +51,7 @@ const styles = StyleSheet.create({
 
     name: { fontSize: 34, fontWeight: "bold", marginBottom: 15, color: "#333" },
 
-    input: { fontSize: 16, width: "100%", height: 60, borderWidth: 1, borderColor: "#ccc", borderRadius: 10, paddingHorizontal: 15, marginBottom: 15,  },
+    input: { fontSize: 16, width: "100%", height: 60, borderWidth: 1, borderColor: "#ccc", borderRadius: 10, paddingHorizontal: 15, marginBottom: 15, },
 
     row: { flexDirection: "row", alignItems: "center", width: "100%" },
     phoneInput: { flex: 1 },

@@ -26,9 +26,9 @@ const LoginScreen = ({ navigation }) => {
         if (!email || !password) return Alert.alert("Error", "All fields are required");
 
         try {
-            const response = await api.post("/auth/login", { email, password });
+            const response = await api.post("/users/login", { email, password });
             const { token, user } = response.data;
-
+            
             // Save token locally
             await AsyncStorage.setItem("token", token);
             setAuthToken(token);

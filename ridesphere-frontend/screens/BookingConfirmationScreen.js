@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 
 const BookingConfirmationScreen = ({ route }) => {
-    const { booking, rideDetails } = route.params;
+    const { updatedRide } = route.params;
     const navigation = useNavigation(); // Get navigation
 
     return (
@@ -22,17 +22,17 @@ const BookingConfirmationScreen = ({ route }) => {
 
                     <View style={styles.detailBlock}>
                         <Text style={styles.label}>📍 Pickup:</Text>
-                        <Text style={styles.value}>{rideDetails.pickup.address}</Text>
+                        <Text style={styles.value}>{updatedRide.pickupLocation.address}</Text>
                     </View>
 
                     <View style={styles.detailBlock}>
                         <Text style={styles.label}>📍 Drop-off:</Text>
-                        <Text style={styles.value}>{rideDetails.dropoff.address}</Text>
+                        <Text style={styles.value}>{updatedRide.dropoffLocation.address}</Text>
                     </View>
 
                     <View style={styles.detailRow}>
                         <Text style={styles.label}>📅 Date & Time:</Text>
-                        <Text style={styles.value}>{new Date(rideDetails.dateTime).toLocaleString()}</Text>
+                        <Text style={styles.value}>{new Date(updatedRide.dateTime).toLocaleString()}</Text>
                     </View>
                 </View>
 
@@ -41,11 +41,11 @@ const BookingConfirmationScreen = ({ route }) => {
                     <Text style={styles.sectionTitle}>👤 Driver</Text>
                     <View style={styles.detailRow}>
                         <Text style={styles.label}>🚗 Name:</Text>
-                        <Text style={styles.value}>{rideDetails.driver.name}</Text>
+                        <Text style={styles.value}>{updatedRide.driverId.name}</Text>
                     </View>
                     <View style={styles.detailRow}>
                         <Text style={styles.label}>🚘 Vehicle:</Text>
-                        <Text style={styles.value}>{rideDetails.vehicleType}</Text>
+                        <Text style={styles.value}>{updatedRide.vehicleType}</Text>
                     </View>
                 </View>
 
@@ -54,13 +54,7 @@ const BookingConfirmationScreen = ({ route }) => {
                     <Text style={styles.sectionTitle}>📝 Booking Summary</Text>
                     <View style={styles.detailRow}>
                         <Text style={styles.label}>💰 Price:</Text>
-                        <Text style={styles.price}>₹{rideDetails.price}</Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.label}>📌 Status:</Text>
-                        <View style={styles.statusBadge}>
-                            <Text style={styles.statusText}>✅ {booking.status.toUpperCase()}</Text>
-                        </View>
+                        <Text style={styles.price}>₹{updatedRide.price}</Text>
                     </View>
                 </View>
 

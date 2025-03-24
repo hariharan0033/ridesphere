@@ -67,22 +67,15 @@ const BookRideScreen = ({ navigation }) => {
                 params: {
                     pickupLat: pickupData.lat,
                     pickupLng: pickupData.lng,
-                    dropLat: dropoffData.lat,
-                    dropLng: dropoffData.lng,
+                    dropoffLat: dropoffData.lat,
+                    dropoffLng: dropoffData.lng,
                 },
             });
 
             let availableRides = rideResponse.data;
             
             // Fetch passenger's booked rides
-            const bookingResponse = await api.get(`/bookings?passengerId=${passengerId}`);
-            const bookedRideIds = bookingResponse.data.map((booking) => booking.rideId);
-
-            // Filter out already booked rides
-            availableRides = availableRides.filter(
-                (ride) => !bookedRideIds.includes(ride._id) && ride.driverId._id !== passengerId
-            );
-
+            
             setRides(availableRides);
         } catch (error) {
             console.error("Error searching rides:", error);
@@ -103,20 +96,15 @@ const BookRideScreen = ({ navigation }) => {
                     text: "Confirm",
                     onPress: async () => {
                         try {
-                            const response = await api.post("/bookings", {
-                                rideId,
-                                passengerId,
-                                seatsBooked: 1,
-                            });
+                            const response = await api.post(`/rides/book/${rideId}`);
 
                             Alert.alert("Success", "Ride booked successfully!");
                             navigation.navigate("BookingConfirmation", {
-                                booking: response.data.booking,
-                                rideDetails: response.data.rideDetails, // Pass ride details
+                                updatedRide: response.data.updatedRide, // Pass ride details
                             });
     
                         } catch (error) {
-                            console.error("Error booking ride:", error);
+                            console.error("Error booking ride:", error.message);
                             Alert.alert("Error", "Failed to book ride. Try again.");
                         }
                     },
@@ -161,90 +149,88 @@ const BookRideScreen = ({ navigation }) => {
                         😕 No rides found. Try a different search.
                     </Text>
                 ) : (
-            <FlatList
-                data={rides}
-                keyExtractor={(item) => item._id}
-                renderItem={({ item }) => {
-                    const istDate = new Date(item.dateTime);
+                    <FlatList
+                    data={rides}
+                    keyExtractor={(item) => item._id}
+                    renderItem={({ item }) => {
+                        const istDate = new Date(item.dateTime);
+        
+                        const formattedDate = istDate.toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                        });
+        
+                        const formattedTime = istDate.toLocaleTimeString("en-IN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                        });
 
-                    const formattedDate = istDate.toLocaleDateString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                    });
-
-                    const formattedTime = istDate.toLocaleTimeString("en-IN", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                    });
-
-                    return (
-                        <View
-                            style={{
-                                backgroundColor: "#fff",
-                                padding: 15,
-                                marginVertical: 8,
-                                marginHorizontal: 10,
-                                borderRadius: 10,
-                                shadowColor: "#000",
-                                shadowOffset: { width: 0, height: 2 },
-                                shadowOpacity: 0.1,
-                                shadowRadius: 4,
-                                elevation: 4,
-                                borderLeftWidth: 5,
-                                borderLeftColor: item.vehicleType === "car" ? "#007bff" : "#28a745",
-                            }}
-                        >
-                            {/* Driver Info */}
-                            <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>
-                                🚗 Driver: {item.driverId.name}
-                            </Text>
-
-                            {/* Ride Date & Time */}
-                            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-                                <Text style={{ fontSize: 14, color: "#333" }}>📅 {formattedDate}</Text>
-                                <Text style={{ fontSize: 14, color: "#333" }}>⏰ {formattedTime}</Text>
-                            </View>
-
-                            {/* Pickup Location */}
-                            <View style={{ marginBottom: 6 }}>
-                                <Text style={{ fontSize: 14, fontWeight: "bold", color: "#555" }}>📍 Pickup Location</Text>
-                                <Text style={{ fontSize: 12, color: "#222" }}>{item.pickupLocation.address}</Text>
-                            </View>
-
-                            {/* Dropoff Location */}
-                            <View style={{ marginBottom: 6 }}>
-                                <Text style={{ fontSize: 14, fontWeight: "bold", color: "#555" }}>📍 Drop-off Location</Text>
-                                <Text style={{ fontSize: 12, color: "#222" }}>{item.dropoffLocation.address}</Text>
-                            </View>
-
-                            {/* Ride Details */}
-                            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-                                <Text style={{ fontSize: 14, color: "#333" }}>🚘 {item.vehicleType.toUpperCase()}</Text>
-                                <Text style={{ fontSize: 14, color: "#333" }}>💺 {item.availableSeats} Seats</Text>
-                                <Text style={{ fontSize: 14, color: "#555", marginBottom: 10 }}>📏 Distance: {item.distance.toFixed(1)} km</Text>
-                            </View>
-
-                            {/* Price */}
-                            <Text style={{ fontSize: 18, color: "#28a745", fontWeight: "bold" }}>💰 ₹{item.price}</Text>
-
-                            {/* Book Button */}
-                            <TouchableOpacity
-                                onPress={() => bookRide(item._id)}
+                        return (
+                            
+                            <View
                                 style={{
-                                    backgroundColor: "#007bff",
-                                    padding: 12,
-                                    borderRadius: 8,
-                                    alignItems: "center",
+                                    backgroundColor: "#fff",
+                                    padding: 15,
+                                    marginVertical: 8,
+                                    marginHorizontal: 10,
+                                    borderRadius: 10,
+                                    shadowColor: "#000",
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.1,
+                                    shadowRadius: 4,
+                                    elevation: 4,
+                                    borderLeftWidth: 5,
+                                    borderLeftColor: "#008955",
                                 }}
                             >
-                                <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>Book Ride</Text>
-                            </TouchableOpacity>
-                        </View>
-                    );
-                }}
-            />
+                                {/* Driver Info */}
+                                <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>
+                                    🚗 Driver: {item.driver.name}
+                                </Text>
+        
+                                {/* Ride Date & Time */}
+                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
+                                    <Text style={{ fontSize: 14, color: "#333" }}>📅 {formattedDate}</Text>
+                                    <Text style={{ fontSize: 14, color: "#333" }}>⏰ {formattedTime}</Text>
+                                </View>
+        
+                                {/* Pickup Location */}
+                                <View style={{ marginBottom: 6 }}>
+                                    <Text style={{ fontSize: 14, fontWeight: "bold", color: "#555" }}>📍 Pickup Location</Text>
+                                    <Text style={{ fontSize: 12, color: "#222" }}>{item.pickupLocation.address}</Text>
+                                </View>
+        
+                                {/* Dropoff Location */}
+                                <View style={{ marginBottom: 6 }}>
+                                    <Text style={{ fontSize: 14, fontWeight: "bold", color: "#555" }}>📍 Drop-off Location</Text>
+                                    <Text style={{ fontSize: 12, color: "#222" }}>{item.dropoffLocation.address}</Text>
+                                </View>
+        
+                                {/* Available Seats & Price */}
+                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
+                                    <Text style={{ fontSize: 14, color: "#333" }}>💺 {item.availableSeats} Seat(s) Left</Text>
+                                    <Text style={{ fontSize: 14, fontWeight: "bold", color: "#28a745" }}>💰 ₹{item.price}</Text>
+                                </View>
+        
+                                {/* Book Button */}
+                                <TouchableOpacity
+                                    onPress={() => bookRide(item._id)}
+                                    style={{
+                                        backgroundColor: "#007bff",
+                                        padding: 12,
+                                        borderRadius: 8,
+                                        alignItems: "center",
+                                        marginTop: 10,
+                                    }}
+                                >
+                                    <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>Book Ride</Text>
+                                </TouchableOpacity>
+                            </View>
+                        );
+                    }}
+                />
                 )}
         </View>
         </SafeAreaView>

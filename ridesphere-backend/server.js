@@ -1,32 +1,32 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const connectDB = require("./config/db");
 
-const authRoutes = require("./routes/authRoutes");
-const rideRoutes = require("./routes/rides");
-const bookingRoutes = require("./routes/bookings");
+const userRoutes = require("./routes/userRoutes");
+const rideRoutes = require("./routes/rideRoutes");
 
+// Load environment variables
 dotenv.config();
+
+// Connect to MongoDB
+connectDB();
 
 const app = express();
 
-app.use(express.json());
-app.use(cors());
+// Middleware
+app.use(express.json()); // Parse JSON request body
+app.use(cors()); // Enable CORS
 
-// Database Connection
-mongoose.connect(process.env.MONGO_URI)
-		.then(() => console.log("MongoDB Connected"))
- 	 	.catch(err => console.log(err));
+// API Routes
+app.use("/api/users", userRoutes); // User authentication routes
+app.use("/api/rides", rideRoutes); // Ride posting routes
 
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/rides", rideRoutes);
-app.use("/api/bookings", bookingRoutes);
+// Basic Route
+app.get("/", (req, res) => {
+  res.send("Hello, welcome to the root route!");
+});
 
-app.get('/', (req, res) => {
-	res.send('Hello, welcome to the root route!');
-  });
-
+// Start the server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
