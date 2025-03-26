@@ -12,7 +12,9 @@ const HomeScreen = () => {
         <View style={styles.container}>
             {/* Top Bar with Menu & Notification Icons */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.openDrawer()}>
+                <TouchableOpacity 
+                // onPress={() => navigation.openDrawer()}
+                >
                     <MaterialIcons name="menu" size={30} color="green" />
                 </TouchableOpacity>
                 <Text style={styles.title}>Welcome, {user?.name || "User"}! 👋</Text>

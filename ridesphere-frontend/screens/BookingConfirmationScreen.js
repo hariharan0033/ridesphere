@@ -1,168 +1,81 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
+import React from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet, SafeAreaView ,StatusBar,Platform} from 'react-native';
 import { useNavigation } from "@react-navigation/native";
 
 const BookingConfirmationScreen = ({ route }) => {
-    const { updatedRide } = route.params;
-    const navigation = useNavigation(); // Get navigation
+
+    const { rideDetails } = route.params; // Access rideDetails from route.params
+    const navigation = useNavigation();
+
 
     return (
-        <SafeAreaView style={styles.safeContainer}>
+        <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
-                {/* Header */}
-                <View style={styles.header}>
-                    <Text style={styles.headerText}>🎉 Booking Confirmed! 🎉</Text>
+                <Text style={styles.title}>Booking Summary</Text>
+                <Text style={styles.rating}>{rideDetails.driverId.name}</Text>
+                <Image source={rideDetails.vehicleType === 'car' ? require('../assets/Car.png') : require('../assets/Bike.png')}  style={styles.carImage} />
+                
+                <View style={styles.featuresContainer}>
+                <Text style={styles.sectionTitle}>Ride Details : </Text>
+                <View style={styles.featureBox}>
+                    <Text style={styles.featureLabel}>Pickup Location</Text>
+                    <Text style={styles.featureValue}>{rideDetails.pickupLocation.address}</Text>
+                    </View>
+
+                    <View style={styles.featureBox}>
+                    <Text style={styles.featureLabel}>Dropoff Location</Text>
+                    <Text style={styles.featureValue}>{rideDetails.dropoffLocation.address}</Text>
+                    </View>
+
+                    <View style={styles.featureBox}>
+                    <Text style={styles.featureLabel}>Distance</Text>
+                    <Text style={styles.featureValue}>{rideDetails.distance} km</Text>
+                    </View>
+
+                    <View style={styles.featureBox}>
+                    <Text style={styles.featureLabel}>Date</Text>
+                    <Text style={styles.featureValue}>{new Date(rideDetails.dateTime).toLocaleDateString()}</Text>
+                    </View>
+
+                    <View style={styles.featureBox}>
+                    <Text style={styles.featureLabel}>Time</Text>
+                    <Text style={styles.featureValue}>{new Date(rideDetails.dateTime).toLocaleTimeString()}</Text>
+                    </View>
+
+                    <View style={styles.featureBox}>
+                    <Text style={styles.featureLabel}>Price</Text>
+                    <Text style={styles.featureValue}>₹{rideDetails.price}</Text>
+                    </View>
+
+
                 </View>
-
-                {/* Ride Details */}
-                <View style={styles.card}>
-                    <Text style={styles.sectionTitle}>🚖 Ride Details</Text>
-
-                    <View style={styles.detailBlock}>
-                        <Text style={styles.label}>📍 Pickup:</Text>
-                        <Text style={styles.value}>{updatedRide.pickupLocation.address}</Text>
-                    </View>
-
-                    <View style={styles.detailBlock}>
-                        <Text style={styles.label}>📍 Drop-off:</Text>
-                        <Text style={styles.value}>{updatedRide.dropoffLocation.address}</Text>
-                    </View>
-
-                    <View style={styles.detailRow}>
-                        <Text style={styles.label}>📅 Date & Time:</Text>
-                        <Text style={styles.value}>{new Date(updatedRide.dateTime).toLocaleString()}</Text>
-                    </View>
+                
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity style={styles.rideNowButton} onPress={() => navigation.navigate("Home")}>
+                        <Text style={{fontSize: 16, color: 'white' ,fontWeight:'bold'}}>Go to Home</Text>
+                    </TouchableOpacity>
                 </View>
-
-                {/* Driver Details */}
-                <View style={styles.card}>
-                    <Text style={styles.sectionTitle}>👤 Driver</Text>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.label}>🚗 Name:</Text>
-                        <Text style={styles.value}>{updatedRide.driverId.name}</Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.label}>🚘 Vehicle:</Text>
-                        <Text style={styles.value}>{updatedRide.vehicleType}</Text>
-                    </View>
-                </View>
-
-                {/* Booking Details */}
-                <View style={styles.card}>
-                    <Text style={styles.sectionTitle}>📝 Booking Summary</Text>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.label}>💰 Price:</Text>
-                        <Text style={styles.price}>₹{updatedRide.price}</Text>
-                    </View>
-                </View>
-
-                {/* Go to Home Button */}
-                <TouchableOpacity style={styles.homeButton} onPress={() => navigation.navigate("Home")}>
-                    <Text style={styles.homeButtonText}>🏠 Go to Home</Text>
-                </TouchableOpacity>
             </View>
         </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
-    safeContainer: {
-        flex: 1,
-        backgroundColor: "#fff", 
-        paddingTop: Platform.OS === "android" ? 30 : 0, // Extra padding for Android status bar
-    },
-    safeArea: {
-        flex: 1,
-        backgroundColor: "#f9f9f9",
-    },
-    container: {
-        flex: 1,
-        padding: 20,
-    },
-    header: {
-        backgroundColor: "#4CAF50",
-        paddingVertical: 15,
-        borderRadius: 10,
-        alignItems: "center",
-        marginBottom: 20,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    headerText: {
-        fontSize: 22,
-        fontWeight: "bold",
-        color: "#fff",
-    },
-    card: {
-        backgroundColor: "#fff",
-        padding: 15,
-        borderRadius: 10,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-        marginBottom: 15,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: "bold",
-        marginBottom: 10,
-        color: "#444",
-    },
-    detailRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 8,
-    },
-    detailBlock: {
-        marginBottom: 12,
-    },
-    label: {
-        fontSize: 14,
-        fontWeight: "bold",
-        color: "#666",
-    },
-    value: {
-        fontSize: 14,
-        color: "#222",
-        textAlign: "left",
-    },
-    price: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "#007AFF",
-    },
-    statusBadge: {
-        backgroundColor: "#4CAF50",
-        paddingVertical: 5,
-        paddingHorizontal: 10,
-        borderRadius: 8,
-        alignSelf: "flex-start",
-    },
-    statusText: {
-        color: "#fff",
-        fontSize: 14,
-        fontWeight: "bold",
-    },
-    homeButton: {
-        backgroundColor: "#007AFF",
-        paddingVertical: 12,
-        borderRadius: 8,
-        alignItems: "center",
-        marginTop: 15,
-    },
-    homeButtonText: {
-        color: "#fff",
-        fontSize: 16,
-        fontWeight: "bold",
-    },
+    safeArea: { flex: 1, backgroundColor: 'white', paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0, },
+    container: {flex:1, padding: 20, backgroundColor: 'white' ,justifyContent: 'space-between',paddingBottom:85},
+    title: { fontSize: 24, fontWeight: 'bold', textAlign: 'left',color:'#008955' },
+    rating: { fontSize: 20, textAlign: 'center', color: 'gray' ,fontWeight:'bold'},
+    carImage: { width: '100%', height: 150, resizeMode: 'contain' },
+    sectionTitle: { fontSize: 20, fontWeight: 'bold', marginTop: 20 },
+    specsContainer: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
+    specBox: { flex: 1, padding: 10, borderWidth: 1, borderRadius: 10, textAlign: 'center', alignItems: 'center', margin: 5 },
+    featuresContainer: { marginTop: 10 },
+    featureBox: { padding: 15, borderWidth: 1, borderRadius: 10, marginVertical: 5,backgroundColor: "#E2F5ED", borderColor: "#008955",fontSize:16, justifyContent: 'space-between', flexDirection: 'row' },
+    featureLabel :{fontSize:16,fontWeight:'bold',color:'#008955'},
+    featureValue :{fontSize:16},
+    buttonContainer: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 },
+    rideNowButton: { padding: 15, backgroundColor: '#008955', borderRadius: 10, flex: 1, alignItems: 'center' },
+
 });
 
 export default BookingConfirmationScreen;

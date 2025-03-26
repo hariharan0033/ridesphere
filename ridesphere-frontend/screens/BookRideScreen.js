@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert ,StyleSheet, Image, Platform} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { FontAwesome5, MaterialIcons } from "@expo/vector-icons"; 
 
 import axios from "axios";
 import { api } from "../services/api";
@@ -100,7 +101,7 @@ const BookRideScreen = ({ navigation }) => {
 
                             Alert.alert("Success", "Ride booked successfully!");
                             navigation.navigate("BookingConfirmation", {
-                                updatedRide: response.data.updatedRide, // Pass ride details
+                              rideDetails: response.data.updatedRide, // Pass ride details
                             });
     
                         } catch (error) {
@@ -199,84 +200,91 @@ const BookRideScreen = ({ navigation }) => {
 
 
     return (
-      <View
-        style={{
-          backgroundColor: "#fff",
-          padding: 15,
-          marginVertical: 8,
-          marginHorizontal: 10,
-          borderRadius: 10,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          elevation: 4,
-          borderWidth: 1,
-          borderColor: "#ddd",
-        }}
-      >
-        {/* Pickup & Dropoff Locations */}
-        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 16, fontWeight: "bold", color: "#555" }}>
-              📍 {item.pickupLocation.address}
-            </Text>
-            <Text style={{ fontSize: 14, color: "#555" }}>⬇</Text>
-            <Text style={{ fontSize: 16, fontWeight: "bold", color: "#555" }}>
-              📍 {item.dropoffLocation.address}
-            </Text>
-          </View>
-          {/* Vehicle Image */}
-          <Image 
-            source={item.vehicleType === 'car' ? require('../assets/Car.png') : require('../assets/Bike.png')} 
-            style={{ width: 50, height: 50, borderRadius: 8 }} 
-          />
-        </View>
 
-        {/* Ride Info */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 10,
-          }}
-        >
-          
-          <Text style={{ fontSize: 14, color: "#333" }}>📅 {formattedDate}</Text>
-          <Text style={{ fontSize: 14, color: "#333" }}>⏰ {formattedTime}</Text>
-        </View>
-
-        {/* Seats & Price */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 10,
-          }}
-        >
-          <Text style={{ fontSize: 14, color: "#333" }}>💺 {item.availableSeats} Seats</Text>
-          <Text style={{ fontSize: 14, color: "#333" }}>👤 {item.driver.name}</Text>
-        </View>
-        
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center"}}>
-        <Text style={{ fontSize: 20, fontWeight: "bold", color: "#008955" }}>₹{item.price}</Text>
-        {/* Book Ride Button */}
-        <TouchableOpacity
-          onPress={() => bookRide(item._id)}
-          style={{
-            backgroundColor: "#008955",
-            padding: 12,
-            borderRadius: 8,
-            alignItems: "center",
-            width: 150,
-          }}
-        >
-          <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>Book Ride</Text>
-        </TouchableOpacity>
-        </View>
+<View
+  style={{
+    backgroundColor: "#E2F5ED",
+    padding: 15,
+    marginVertical: 8,
+    marginHorizontal: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#008955",
+  }}
+>
+  {/* Pickup & Dropoff Locations */}
+  <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+    <View style={{ flex: 1 }}>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <FontAwesome5 name="map-marker-alt" size={18} color="#008955" />
+        <Text style={{ fontSize: 18, fontWeight: "bold", color: "#555", marginLeft: 5 }}>
+          {item.pickupLocation.address}
+        </Text>
       </View>
+
+      <View style={{ marginLeft: 10 }}>
+        <MaterialIcons name="arrow-downward" size={18} color="#555" />
+      </View>
+
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <FontAwesome5 name="map-marker-alt" size={18} color="#008955" />
+        <Text style={{ fontSize: 18, fontWeight: "bold", color: "#555", marginLeft: 5 }}>
+          {item.dropoffLocation.address}
+        </Text>
+      </View>
+    </View>
+
+    {/* Vehicle Image */}
+    <Image 
+      source={item.vehicleType === 'car' ? require('../assets/Car.png') : require('../assets/Bike.png')} 
+      style={{ width: 50, height: 50, borderRadius: 8 }} 
+    />
+  </View>
+
+  {/* Ride Info */}
+  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <FontAwesome5 name="calendar-alt" size={14} color="#333" />
+      <Text style={{ fontSize: 14, color: "#333", marginLeft: 5 }}>{formattedDate}</Text>
+    </View>
+
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <FontAwesome5 name="clock" size={14} color="#333" />
+      <Text style={{ fontSize: 14, color: "#333", marginLeft: 5 }}>{formattedTime}</Text>
+    </View>
+  </View>
+
+  {/* Seats & Driver */}
+  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <FontAwesome5 name="chair" size={14} color="#333" />
+      <Text style={{ fontSize: 14, color: "#333", marginLeft: 5 }}>{item.availableSeats} Seats</Text>
+    </View>
+
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <FontAwesome5 name="user" size={14} color="#333" />
+      <Text style={{ fontSize: 14, color: "#333", marginLeft: 5 }}>{item.driver.name}</Text>
+    </View>
+  </View>
+
+  {/* Price & Book Ride Button */}
+  <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center"}}>
+    <Text style={{ fontSize: 20, fontWeight: "bold", color: "#008955" }}>₹{item.price}</Text>
+
+    <TouchableOpacity
+      onPress={() => bookRide(item._id)}
+      style={{
+        backgroundColor: "#008955",
+        padding: 12,
+        borderRadius: 8,
+        alignItems: "center",
+        width: 150,
+      }}
+    >
+      <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>Book Ride</Text>
+    </TouchableOpacity>
+  </View>
+</View>
     );
   }}
 />
