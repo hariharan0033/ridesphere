@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert ,StyleSheet, Platform} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Alert ,StyleSheet, Image, Platform} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import axios from "axios";
@@ -118,29 +118,58 @@ const BookRideScreen = ({ navigation }) => {
     return (
         <SafeAreaView style={styles.safeContainer}>
         <View style={{ flex: 1, padding: 20 }}>
-            <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 10 }}>Book a Ride</Text>
 
             <TextInput
                 placeholder="Enter Pickup Location"
                 value={pickup}
                 onChangeText={setPickup}
-                style={{ borderWidth: 1, padding: 10, marginBottom: 10, borderRadius: 5 }}
+                placeholderTextColor="#d0d0d0"
+                style={{
+                    borderWidth: 1,
+                    borderColor: "#b8b8b8",
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    height: 50,
+                    fontSize: 16,
+                    marginBottom: 15,
+                    backgroundColor: "#fff",
+                }}
             />
             <TextInput
                 placeholder="Enter Drop-off Location"
                 value={dropoff}
                 onChangeText={setDropoff}
-                style={{ borderWidth: 1, padding: 10, marginBottom: 10, borderRadius: 5 }}
+                placeholderTextColor="#d0d0d0"
+                style={{
+                    borderWidth: 1,
+                    borderColor: "#b8b8b8",
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    height: 50,
+                    fontSize: 16,
+                    marginBottom: 15,
+                    backgroundColor: "#fff",
+                }}
             />
 
             <TouchableOpacity
                 onPress={searchRides}
-                style={{ backgroundColor: "blue", padding: 15, borderRadius: 5, alignItems: "center" }}
+                style={{
+                    backgroundColor:  pickup && dropoff ? "#008955" : "#B0B0B0",
+                    padding: 15,
+                    borderRadius: 8,
+                    alignItems: "center",
+                    height: 54,
+                }}
+                disabled={!pickup || !dropoff}
             >
-                <Text style={{ color: "white", fontWeight: "bold" }}>Search Rides</Text>
+                <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>
+                    Search Rides
+                </Text>
             </TouchableOpacity>
 
-            {loading && <ActivityIndicator size="large" color="blue" style={{ marginTop: 10 }} />}
+            {loading && <ActivityIndicator size="large" color="#008955" style={{ marginTop: 15 }} />}
+        
 
             {error ? <Text style={{ color: "red", marginTop: 10 }}>{error}</Text> : null}
 
@@ -150,87 +179,107 @@ const BookRideScreen = ({ navigation }) => {
                     </Text>
                 ) : (
                     <FlatList
-                    data={rides}
-                    keyExtractor={(item) => item._id}
-                    renderItem={({ item }) => {
-                        const istDate = new Date(item.dateTime);
-        
-                        const formattedDate = istDate.toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                        });
-        
-                        const formattedTime = istDate.toLocaleTimeString("en-IN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
-                        });
+  data={rides}
+  keyExtractor={(item) => item._id}
+  renderItem={({ item }) => {
+    const istDate = new Date(item.dateTime);
 
-                        return (
-                            
-                            <View
-                                style={{
-                                    backgroundColor: "#fff",
-                                    padding: 15,
-                                    marginVertical: 8,
-                                    marginHorizontal: 10,
-                                    borderRadius: 10,
-                                    shadowColor: "#000",
-                                    shadowOffset: { width: 0, height: 2 },
-                                    shadowOpacity: 0.1,
-                                    shadowRadius: 4,
-                                    elevation: 4,
-                                    borderLeftWidth: 5,
-                                    borderLeftColor: "#008955",
-                                }}
-                            >
-                                {/* Driver Info */}
-                                <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 8 }}>
-                                    🚗 Driver: {item.driver.name}
-                                </Text>
+    const formattedDate = istDate.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+
+    const formattedTime = istDate.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+
+
+    return (
+      <View
+        style={{
+          backgroundColor: "#fff",
+          padding: 15,
+          marginVertical: 8,
+          marginHorizontal: 10,
+          borderRadius: 10,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 4,
+          borderWidth: 1,
+          borderColor: "#ddd",
+        }}
+      >
+        {/* Pickup & Dropoff Locations */}
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 16, fontWeight: "bold", color: "#555" }}>
+              📍 {item.pickupLocation.address}
+            </Text>
+            <Text style={{ fontSize: 14, color: "#555" }}>⬇</Text>
+            <Text style={{ fontSize: 16, fontWeight: "bold", color: "#555" }}>
+              📍 {item.dropoffLocation.address}
+            </Text>
+          </View>
+          {/* Vehicle Image */}
+          <Image 
+            source={item.vehicleType === 'car' ? require('../assets/Car.png') : require('../assets/Bike.png')} 
+            style={{ width: 50, height: 50, borderRadius: 8 }} 
+          />
+        </View>
+
+        {/* Ride Info */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 10,
+          }}
+        >
+          
+          <Text style={{ fontSize: 14, color: "#333" }}>📅 {formattedDate}</Text>
+          <Text style={{ fontSize: 14, color: "#333" }}>⏰ {formattedTime}</Text>
+        </View>
+
+        {/* Seats & Price */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 10,
+          }}
+        >
+          <Text style={{ fontSize: 14, color: "#333" }}>💺 {item.availableSeats} Seats</Text>
+          <Text style={{ fontSize: 14, color: "#333" }}>👤 {item.driver.name}</Text>
+        </View>
         
-                                {/* Ride Date & Time */}
-                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-                                    <Text style={{ fontSize: 14, color: "#333" }}>📅 {formattedDate}</Text>
-                                    <Text style={{ fontSize: 14, color: "#333" }}>⏰ {formattedTime}</Text>
-                                </View>
-        
-                                {/* Pickup Location */}
-                                <View style={{ marginBottom: 6 }}>
-                                    <Text style={{ fontSize: 14, fontWeight: "bold", color: "#555" }}>📍 Pickup Location</Text>
-                                    <Text style={{ fontSize: 12, color: "#222" }}>{item.pickupLocation.address}</Text>
-                                </View>
-        
-                                {/* Dropoff Location */}
-                                <View style={{ marginBottom: 6 }}>
-                                    <Text style={{ fontSize: 14, fontWeight: "bold", color: "#555" }}>📍 Drop-off Location</Text>
-                                    <Text style={{ fontSize: 12, color: "#222" }}>{item.dropoffLocation.address}</Text>
-                                </View>
-        
-                                {/* Available Seats & Price */}
-                                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-                                    <Text style={{ fontSize: 14, color: "#333" }}>💺 {item.availableSeats} Seat(s) Left</Text>
-                                    <Text style={{ fontSize: 14, fontWeight: "bold", color: "#28a745" }}>💰 ₹{item.price}</Text>
-                                </View>
-        
-                                {/* Book Button */}
-                                <TouchableOpacity
-                                    onPress={() => bookRide(item._id)}
-                                    style={{
-                                        backgroundColor: "#007bff",
-                                        padding: 12,
-                                        borderRadius: 8,
-                                        alignItems: "center",
-                                        marginTop: 10,
-                                    }}
-                                >
-                                    <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>Book Ride</Text>
-                                </TouchableOpacity>
-                            </View>
-                        );
-                    }}
-                />
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center"}}>
+        <Text style={{ fontSize: 20, fontWeight: "bold", color: "#008955" }}>₹{item.price}</Text>
+        {/* Book Ride Button */}
+        <TouchableOpacity
+          onPress={() => bookRide(item._id)}
+          style={{
+            backgroundColor: "#008955",
+            padding: 12,
+            borderRadius: 8,
+            alignItems: "center",
+            width: 150,
+          }}
+        >
+          <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>Book Ride</Text>
+        </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }}
+/>
                 )}
         </View>
         </SafeAreaView>

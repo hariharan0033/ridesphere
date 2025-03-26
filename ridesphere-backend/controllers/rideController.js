@@ -112,10 +112,10 @@ const searchRides = async (req, res) => {
           dateTime: 1,
           availableSeats: 1,
           price: 1,
+          vehicleType: 1,
           driver: {
             name: "$driverDetails.name",
             mobileNumber: "$driverDetails.mobileNumber",
-            vehicleType: "$driverDetails.vehicleType"
           }
         }
       }
