@@ -5,6 +5,7 @@ import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 
 import axios from "axios";
 import { api } from "../services/api";
+import { capitalize } from '../utils/capitalize';
 import { useSelector } from "react-redux";
 
 const BookRideScreen = ({ navigation }) => {
@@ -218,7 +219,7 @@ const BookRideScreen = ({ navigation }) => {
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <FontAwesome5 name="map-marker-alt" size={18} color="#008955" />
         <Text style={{ fontSize: 18, fontWeight: "bold", color: "#555", marginLeft: 5 }}>
-          {item.pickupLocation.address}
+          {capitalize(item.pickupLocation.address)}
         </Text>
       </View>
 
@@ -229,7 +230,7 @@ const BookRideScreen = ({ navigation }) => {
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <FontAwesome5 name="map-marker-alt" size={18} color="#008955" />
         <Text style={{ fontSize: 18, fontWeight: "bold", color: "#555", marginLeft: 5 }}>
-          {item.dropoffLocation.address}
+          {capitalize(item.dropoffLocation.address)}
         </Text>
       </View>
     </View>

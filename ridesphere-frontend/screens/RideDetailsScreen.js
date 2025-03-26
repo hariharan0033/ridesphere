@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { api } from "../services/api";
 import { useEffect } from "react";
+import { capitalize } from '../utils/capitalize';
 
 const RideDetailsScreen = () => {
   const navigation = useNavigation();
@@ -119,12 +120,12 @@ const RideDetailsScreen = () => {
 
       <View style={styles.inputBox}>
         <Text style={styles.label}>Pickup</Text>
-        <Text style={styles.infoText}>{pickupLocation.address}</Text>
+        <Text style={styles.infoText}>{capitalize(pickupLocation.address)}</Text>
       </View>
 
       <View style={styles.inputBox}>
         <Text style={styles.label}>Drop-off</Text>
-        <Text style={styles.infoText}>{dropoffLocation.address}</Text>
+        <Text style={styles.infoText}>{capitalize(dropoffLocation.address)}</Text>
       </View>
 
       <View style={styles.rowContainer}>

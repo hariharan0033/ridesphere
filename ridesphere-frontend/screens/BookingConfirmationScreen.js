@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, SafeAreaView ,StatusBar,Platform} from 'react-native';
 import { useNavigation } from "@react-navigation/native";
+import { capitalize } from '../utils/capitalize';
+
 
 const BookingConfirmationScreen = ({ route }) => {
 
@@ -19,12 +21,12 @@ const BookingConfirmationScreen = ({ route }) => {
                 <Text style={styles.sectionTitle}>Ride Details : </Text>
                 <View style={styles.featureBox}>
                     <Text style={styles.featureLabel}>Pickup Location</Text>
-                    <Text style={styles.featureValue}>{rideDetails.pickupLocation.address}</Text>
+                    <Text style={styles.featureValue}>{capitalize(rideDetails.pickupLocation.address)}</Text>
                     </View>
 
                     <View style={styles.featureBox}>
                     <Text style={styles.featureLabel}>Dropoff Location</Text>
-                    <Text style={styles.featureValue}>{rideDetails.dropoffLocation.address}</Text>
+                    <Text style={styles.featureValue}>{capitalize(rideDetails.dropoffLocation.address)}</Text>
                     </View>
 
                     <View style={styles.featureBox}>
