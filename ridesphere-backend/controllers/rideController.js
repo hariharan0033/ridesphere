@@ -209,8 +209,13 @@ const getMyRides = async (req, res) => {
     const driverId = req.user._id;
 
     const rides = await Ride.find({ driverId })
-      .populate("bookedRiders", "name mobileNumber")
-      .sort({ dateTime: 1 }); // Sort by upcoming rides first
+    .populate({
+      path: "bookedRiders", // Ensure this matches the field in the schema
+      model: "User", // Explicitly specify the referenced model
+      select: "name mobileNumber", // Select only necessary fields
+    })
+    .sort({ dateTime: 1 });
+
 
     if (!rides.length) {
       return res.status(404).json({ message: "No rides posted yet" });
