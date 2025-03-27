@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,31 +8,41 @@ import {
   Image,
   Platform,
   StatusBar,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { api } from "../services/api";
-import { capitalize } from '../utils/capitalize';
-import { useSelector } from "react-redux";
+import { capitalize } from "../utils/capitalize";
 
 const MyRidesScreen = () => {
   const [rides, setRides] = useState([]);
   const [loading, setLoading] = useState(true);
-  const userToken = useSelector((state) => state.auth.token);
+  const [refreshing, setRefreshing] = useState(false);
 
+  // Fetch rides data
+  const fetchRides = useCallback(async () => {
+    try {
+      const response = await api.get("/rides/my-rides");
+      setRides(response.data);
+    } catch (error) {
+      console.error("Error fetching rides:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  // Fetch data only when the component mounts
   useEffect(() => {
-    const fetchRides = async () => {
-      try {
-        const response = await api.get("/rides/my-rides");
-        setRides(response.data);
-      } catch (error) {
-        console.error("Error fetching rides:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchRides();
-  });
+  }, [fetchRides]);
+
+  // Pull-to-refresh function
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchRides();
+  };
 
   if (loading) {
     return (
@@ -55,6 +65,9 @@ const MyRidesScreen = () => {
       <FlatList
         data={rides}
         keyExtractor={(item) => item._id}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#008955"]} />
+        }
         renderItem={({ item }) => {
           const istDate = new Date(item.dateTime);
           const formattedDate = istDate.toLocaleDateString("en-IN", {
@@ -69,7 +82,7 @@ const MyRidesScreen = () => {
           });
 
           return (
-            <View style={styles.rideCard} key={item._id}>
+            <View style={styles.rideCard}>
               <View style={styles.locationContainer}>
                 <View style={{ flex: 1 }}>
                   <View style={styles.locationRow}>
@@ -93,42 +106,42 @@ const MyRidesScreen = () => {
               </View>
 
               <View style={styles.infosRow}>
-              <View style={styles.infoRow}>
-                <FontAwesome5 name="calendar-alt" size={14} color="#333" />
-                <Text style={styles.infoText}>{formattedDate}</Text>
-              </View>
+                <View style={styles.infoRow}>
+                  <FontAwesome5 name="calendar-alt" size={14} color="#333" />
+                  <Text style={styles.infoText}>{formattedDate}</Text>
+                </View>
 
-              <View style={styles.infoRow}> 
-              <FontAwesome5 name="clock" size={14} color="#333"/>
-              <Text style={styles.infoText}>{formattedTime}</Text>
-              </View >
+                <View style={styles.infoRow}>
+                  <FontAwesome5 name="clock" size={14} color="#333" />
+                  <Text style={styles.infoText}>{formattedTime}</Text>
+                </View>
 
-              <View style={styles.infoRow}>
-                <FontAwesome5 name="chair" size={14} color="#333" />
-                <Text style={styles.infoText}>{item.availableSeats} Seats</Text>
-              </View>
+                <View style={styles.infoRow}>
+                  <FontAwesome5 name="chair" size={14} color="#333" />
+                  <Text style={styles.infoText}>{item.availableSeats} Seats</Text>
+                </View>
               </View>
 
               <Text style={styles.boldText}>Booked Riders:</Text>
               {item.vehicleType === "car" ? (
-  Array.isArray(item.bookedRiders) && item.bookedRiders.length > 0 ? (
-    item.bookedRiders.map((rider, index) => (
-      <Text key={rider._id || index} style={styles.riderText}>
-        {rider.name} - {rider.mobileNumber}
-      </Text>
-    ))
-  ) : (
-    <Text style={styles.riderText}>No riders booked yet</Text>
-  )
-) : item.vehicleType === "bike" ? (
-  item.bookedRiders && item.bookedRiders._id ? (
-    <Text style={styles.riderText}>
-      {item.bookedRiders.name} - {item.bookedRiders.mobileNumber}
-    </Text>
-  ) : (
-    <Text style={styles.riderText}>No rider booked yet</Text>
-  )
-) : null}
+                Array.isArray(item.bookedRiders) && item.bookedRiders.length > 0 ? (
+                  item.bookedRiders.map((rider, index) => (
+                    <Text key={rider._id || index} style={styles.riderText}>
+                      {rider.name} - {rider.mobileNumber}
+                    </Text>
+                  ))
+                ) : (
+                  <Text style={styles.riderText}>No riders booked yet</Text>
+                )
+              ) : item.vehicleType === "bike" ? (
+                item.bookedRiders && item.bookedRiders._id ? (
+                  <Text style={styles.riderText}>
+                    {item.bookedRiders.name} - {item.bookedRiders.mobileNumber}
+                  </Text>
+                ) : (
+                  <Text style={styles.riderText}>No rider booked yet</Text>
+                )
+              ) : null}
             </View>
           );
         }}
@@ -138,7 +151,13 @@ const MyRidesScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fff", marginBottom:65 ,paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0, },
+  container: { 
+    flex: 1, 
+    padding: 20, 
+    backgroundColor: "#fff", 
+    marginBottom: 65,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0, 
+  },
   loaderContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   message: { fontSize: 18, textAlign: "center", marginTop: 20 },
   rideCard: {
@@ -154,7 +173,7 @@ const styles = StyleSheet.create({
   locationRow: { flexDirection: "row", alignItems: "center" },
   locationText: { fontSize: 18, fontWeight: "bold", color: "#555", marginLeft: 5 },
   vehicleImage: { width: 50, height: 50, borderRadius: 8 },
-  infosRow:{flexDirection: "row", alignItems: "center",  justifyContent:"space-between",},
+  infosRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   infoRow: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
   infoText: { fontSize: 14, color: "#333", marginLeft: 5 },
   boldText: { fontSize: 16, fontWeight: "bold", marginTop: 10 },

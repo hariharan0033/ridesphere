@@ -234,9 +234,10 @@ const getMyBookings = async (req, res) => {
   try {
     const userId = req.user._id;
 
+    // Fetch rides where the user is in bookedRiders
     const rides = await Ride.find({ bookedRiders: userId })
-      .populate("driverId", "name mobileNumber vehicleType")
-      .sort({ dateTime: 1 }); // Sort by upcoming rides first
+      .populate("driverId", "name mobileNumber") // Populate only driver details
+      .sort({ dateTime: 1 });
 
     if (!rides.length) {
       return res.status(404).json({ message: "No bookings found" });
@@ -244,9 +245,12 @@ const getMyBookings = async (req, res) => {
 
     res.status(200).json(rides);
   } catch (error) {
+    console.error("Error fetching bookings:", error); 
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
 
 module.exports = {
   createRide,
