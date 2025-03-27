@@ -14,6 +14,11 @@ const registerUser = async (req, res) => {
   const { name, email, password, mobileNumber } = req.body;
 
   try {
+    // Check if email belongs to saveetha.ac.in domain
+    if (!email.endsWith("@saveetha.ac.in")) {
+      return res.status(400).json({ message: "Only Saveetha email addresses are allowed" });
+    }
+    
     // Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {

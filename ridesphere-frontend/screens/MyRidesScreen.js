@@ -36,7 +36,7 @@ const MyRidesScreen = () => {
   // Fetch data only when the component mounts
   useEffect(() => {
     fetchRides();
-  }, [fetchRides]);
+  }, []);
 
   // Pull-to-refresh function
   const onRefresh = () => {

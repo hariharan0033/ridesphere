@@ -217,9 +217,9 @@ const getMyRides = async (req, res) => {
     .sort({ dateTime: 1 });
 
 
-    if (!rides.length) {
-      return res.status(404).json({ message: "No rides posted yet" });
-    }
+    // if (!rides.length) {
+    //   return res.status(404).json({ message: "No rides posted yet" });
+    // }
 
     res.status(200).json(rides);
   } catch (error) {
@@ -239,13 +239,41 @@ const getMyBookings = async (req, res) => {
       .populate("driverId", "name mobileNumber") // Populate only driver details
       .sort({ dateTime: 1 });
 
-    if (!rides.length) {
-      return res.status(404).json({ message: "No bookings found" });
-    }
+    // if (!rides.length) {
+    //   return res.status(404).json({ message: "No bookings found" });
+    // }
 
     res.status(200).json(rides);
   } catch (error) {
     console.error("Error fetching bookings:", error); 
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// @desc    Get one upcoming booked ride and one upcoming offered ride
+// @route   GET /api/rides/upcoming-rides
+// @access  Private
+const getUpcomingRides = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Fetch the nearest upcoming ride offered by the user
+    const offeredRide = await Ride.findOne({ driverId: userId, dateTime: { $gte: new Date() } })
+      .populate({
+        path: "bookedRiders",
+        model: "User",
+        select: "name mobileNumber",
+      })
+      .sort({ dateTime: 1 });
+
+    // Fetch the nearest upcoming ride booked by the user
+    const bookedRide = await Ride.findOne({ bookedRiders: userId, dateTime: { $gte: new Date() } })
+      .populate("driverId", "name mobileNumber")
+      .sort({ dateTime: 1 });
+
+    res.status(200).json({ offeredRide, bookedRide });
+  } catch (error) {
+    console.error("Error fetching upcoming rides:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
@@ -258,4 +286,5 @@ module.exports = {
   bookRide,
   getMyRides,
   getMyBookings,
+  getUpcomingRides
 };
