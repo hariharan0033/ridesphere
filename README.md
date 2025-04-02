@@ -120,6 +120,5 @@ We welcome contributions! Follow these steps to contribute:
 🚀 **RideSphere - Making Student Commutes Smarter & Easier!**
 
 ## 📜 License  
-RideSphere is open-source software licensed under the **GNU Affero General Public License v3.0**.  
-See the [LICENSE](./LICENSE) file for more details.
+RideSphere is open-source software licensed under the GNU General Public License v3.0.See the LICENSE file for more details.
 
